@@ -17,12 +17,15 @@ html,body{
     top: 0;
     bottom: 0;
     background-image: url('../static/textures/background/Tesla-background.jpeg');
+    background-position: center center;
     display: flex;
     flex-direction: column;
     justify-content: center; /* vertikalno */
     align-items: center;     /* horizontalno */
     gap: 16px;
     z-index:15;
+    
+
 }
 #welcome-screen h1{
     font-weight: 900;
@@ -30,6 +33,7 @@ html,body{
     color: white;
     border-radius: 10px;
     padding: 15px;
+    text-align: center;
 }
 #welcome-screen button{
     font-weight: 900;
@@ -67,4 +71,11 @@ html,body{
     height: 100%;
     /*background: rgba(0, 0, 0, 0.75); /* ← jačina zatamnjenja */
     z-index: -1;
+}
+@media (max-width: 768px){
+    #welcome-screen h1{
+        font-size: 24px;
+        max-width: 80vw;
+        margin: 15px;
+    }
 }
