@@ -42,7 +42,9 @@ html,body{
     border-radius: 10px;
     padding: 10px;
 }
-
+.display-none{
+    display: none;
+}
 .hotspot-label {
     background: rgba(0,0,0,0.75);
     color: white;

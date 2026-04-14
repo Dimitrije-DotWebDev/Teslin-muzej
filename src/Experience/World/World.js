@@ -13,12 +13,17 @@ export default class World{
         this.scene = this.experience.scene;
         this.resources = this.experience.resources;
         this.resources.on('ready', ()=>{
+            this.displayStartButton();
             this.envronment = new Environment();
             this.twoPhasesGenerator = new Generator(new THREE.Vector3(0,1.33,0), 'twoPhasesGeneratorModel', {navojiMotora: {name: 'Tube64',edge: 'right', offset: {x: -0.5, y: 0}}, rotorMotora: {name: 'Tube54',edge: 'up', offset: {x: 0, y: 0}}, statorMotora: {name: 'Tube07',edge: 'up', offset: {x: 0.7, y: 0}}, statorGeneratora: {name: 'Box01',edge: 'up', offset: {x: 0, y: 0}}, rotorGeneratora: {name: 'Tube67',edge: 'right', offset: {x: 0, y: 0}}, provodnik: {name: 'Line03', edge: 'bottom', offset: {x: 0, y: 0}}});
 
             this.floor = new Floor();
             this.addStartButtonEventListener();
         });
+    }
+    displayStartButton(){
+        const startButton = document.getElementById("start-button");
+        startButton.classList.remove("display-none");
     }
     introAnimation(){
         const t1 = gsap.timeline({
