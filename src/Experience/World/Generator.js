@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Experience from '../Experience';
 import { Hotspot } from './Hotspot';
+import MagneticField from './MagneticField';
 
 export default class Generator{
     constructor(position, key, hotspotPartNames){
@@ -16,6 +17,7 @@ export default class Generator{
         this.setAnimation();
         this.setHotspots();
         this.setDebug();
+        this.magneticField = new MagneticField(this);
     }
 
     setModel(){
@@ -38,7 +40,12 @@ export default class Generator{
             const data = this.hotspotPartNames[key];
 
             const mesh = this.model.getObjectByName(data.name);
-
+            if(this.hotspotPartNames[key].isMagneticFieldObject){
+                this.magneticFieldObject = mesh;
+            }
+            if(this.hotspotPartNames[key].isMagneticFieldRotationObject){
+                this.magneticFieldRotationObject = mesh;
+            }
             if(!mesh) continue;
             this.hotspotMeshes[key] = mesh;
             this.model.updateWorldMatrix(true, true);
@@ -141,5 +148,7 @@ export default class Generator{
         if(this.hotspots){
             this.hotspots.forEach(h => h.update());
         }
+
+        this.magneticField.update();
     }
 }

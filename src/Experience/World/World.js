@@ -5,7 +5,6 @@ import Generator from './Generator.js';
 import Floor from './Floor.js';
 import gsap from 'gsap';
 import rollingSound from '../../../static/audio/rollingSound/rolling.wav';
-import { Hotspot } from './Hotspot.js';
 
 export default class World{
     constructor(){
@@ -15,7 +14,53 @@ export default class World{
         this.resources.on('ready', ()=>{
             this.displayStartButton();
             this.envronment = new Environment();
-            this.twoPhasesGenerator = new Generator(new THREE.Vector3(0,1.33,0), 'twoPhasesGeneratorModel', {navojiMotora: {name: 'Tube64',edge: 'right', offset: {x: -0.5, y: 0}}, rotorMotora: {name: 'Tube54',edge: 'up', offset: {x: 0, y: 0}}, statorMotora: {name: 'Tube07',edge: 'up', offset: {x: 0.7, y: 0}}, statorGeneratora: {name: 'Box01',edge: 'up', offset: {x: 0, y: 0}}, rotorGeneratora: {name: 'Tube67',edge: 'right', offset: {x: 0, y: 0}}, provodnik: {name: 'Line03', edge: 'bottom', offset: {x: 0, y: 0}}});
+            this.twoPhasesGenerator = new Generator(
+                new THREE.Vector3(0,1.33,0),
+                'twoPhasesGeneratorModel',
+                {
+                    navojiMotora: {
+                        name: 'Tube64',
+                        edge: 'right', 
+                        offset: {x: -0.5, y: 0},
+                        isMagneticFieldObject: false,
+                        isMagneticFieldRotationObject: false 
+                    }, 
+                    rotorMotora: {
+                        name: 'Tube54',
+                        edge: 'up', 
+                        offset: {x: 0, y: 0},
+                        isMagneticFieldObject: false,
+                        isMagneticFieldRotationObject: false 
+                    },
+                    statorMotora: {
+                        name: 'Tube07',
+                        edge: 'up', 
+                        offset: {x: 0.7, y: 0},
+                        isMagneticFieldObject: true,
+                        isMagneticFieldRotationObject: false 
+                    }, 
+                    statorGeneratora: {
+                        name: 'Box01',
+                        edge: 'up', 
+                        offset: {x: 0, y: 0},
+                        isMagneticFieldObject: false,
+                        isMagneticFieldRotationObject: false
+                    }, 
+                    rotorGeneratora: {
+                        name: 'Tube67',
+                        edge: 'right', 
+                        offset: {x: 0, y: 0},
+                        isMagneticFieldObject: false,
+                        isMagneticFieldRotationObject: true 
+                    }, 
+                    provodnik: {
+                        name: 'Line03', 
+                        edge: 'bottom', 
+                        offset: {x: 0, y: 0},
+                        isMagneticFieldObject: false,
+                        isMagneticFieldRotationObject: false 
+                    },
+                });
 
             this.floor = new Floor();
             this.addStartButtonEventListener();
