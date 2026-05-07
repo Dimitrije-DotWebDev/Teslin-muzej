@@ -27,7 +27,8 @@ export default class Floor{
             reflectivity: 0.5,
             ior: 1.5,
             opacity: 0.8,
-            transparent: true
+            transparent: true,
+            depthWrite: false,
         });
     }
 

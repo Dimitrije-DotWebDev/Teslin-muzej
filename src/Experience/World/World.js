@@ -30,7 +30,7 @@ export default class World{
                         edge: 'up', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false 
+                        isMagneticFieldRotationObject: true 
                     },
                     statorMotora: {
                         name: 'Tube07',
@@ -51,7 +51,7 @@ export default class World{
                         edge: 'right', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: true 
+                        isMagneticFieldRotationObject: false 
                     }, 
                     provodnik: {
                         name: 'Line03', 
@@ -91,7 +91,7 @@ export default class World{
           .to(this.envronment.ambientLight, {intensity: 0.5, duration: 0.3})
           .to(this.envronment.ambientLight, {intensity: 1.5, duration: 0.4}, "0");
 
-        t1.to(this.experience.camera.instance.position, {x: 3, y: 6, z: 12, duration: 3, ease: "power2.inOut"}, "0");
+        t1.to(this.experience.camera.instance.position, {x: -1, y: 3, z: 13, duration: 3, ease: "power2.inOut"}, "0");
     }
 
     addStartButtonEventListener(){

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import Experience from '../Experience';
 import { Hotspot } from './Hotspot';
-import MagneticField from './MagneticField';
+import ArtisticMagneticField from './ArtisticMagneticField';
+import EngineeringMagneticField from './EngineeringMagneticField';
 
 export default class Generator{
     constructor(position, key, hotspotPartNames){
@@ -17,7 +18,7 @@ export default class Generator{
         this.setAnimation();
         this.setHotspots();
         this.setDebug();
-        this.magneticField = new MagneticField(this);
+        this.magneticField = new EngineeringMagneticField(this);
     }
 
     setModel(){
