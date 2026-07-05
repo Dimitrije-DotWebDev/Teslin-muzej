@@ -74,6 +74,132 @@ html,body{
     /*background: rgba(0, 0, 0, 0.75); /* ← jačina zatamnjenja */
     z-index: -1;
 }
+
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #05070c, #000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#loadingScreen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* wrapper da sve bude centrirano */
+.loadingTextWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    display: inline-flex;
+}
+
+/* Tvoj text ostaje 100% isti */
+.loadingText {
+    font-size: 48px;
+    letter-spacing: 0.4em;
+    color: #7cc7ff;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    animation: pulse 1.2s infinite ease-in-out;
+    translate: 0.2em 0;
+}
+
+/* 🔥 KEY CHANGE: track sada prati text width */
+.track {
+    width: 100%;
+    height: 3px;
+    background: #222;
+    margin-top: 14px;
+    overflow: hidden;
+
+    box-shadow: 0 0 10px rgba(47, 125, 255, 0.2);
+}
+
+.bar {
+    width: 0%;
+    height: 100%;
+    background: #2f7dff;
+
+    transition: width 0.12s linear;
+    box-shadow: 0 0 8px rgba(47, 125, 255, 0.8);
+}
+
+@keyframes pulse {
+    0%   { opacity: 0.3; transform: scale(0.98); }
+    50%  { opacity: 1;   transform: scale(1.02); }
+    100% { opacity: 0.3; transform: scale(0.98); }
+}
+
+.dg.main{
+    width: 295px!important;
+}
+.dg.main .close-button.close-bottom {
+    width: 295px!important;
+}
+
+.magnet-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 12px;
+    color: #fff;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    cursor: pointer;
+    user-select: none;
+    padding-right: 10px!important;
+}
+
+.magnet-switch:hover {
+    border-color: rgba(0, 255, 200, 0.4);
+}
+
+.magnet-switch-track {
+    width: 38px;
+    height: 20px;
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.15);
+    position: relative;
+
+    transition: 0.25s;
+}
+
+.magnet-switch.on .magnet-switch-track {
+    background: rgba(0, 255, 180, 0.25);
+    box-shadow: 0 0 10px rgba(0, 255, 180, 0.5);
+}
+
+.magnet-switch-knob {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+
+    transition: 0.25s;
+}
+
+.magnet-switch.on .magnet-switch-knob {
+    left: 20px;
+    background: #00ffc3;
+}
+
 @media (max-width: 768px){
     #welcome-screen h1{
         font-size: 24px;

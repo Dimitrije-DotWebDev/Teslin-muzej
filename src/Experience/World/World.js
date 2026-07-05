@@ -23,42 +23,48 @@ export default class World{
                         edge: 'right', 
                         offset: {x: -0.5, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false 
+                        isMagneticFieldRotationObject: false,
+                        displayName: 'Навоји мотора' 
                     }, 
                     rotorMotora: {
                         name: 'Tube54',
                         edge: 'up', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: true 
+                        isMagneticFieldRotationObject: true,
+                        displayName: 'Ротор мотора'  
                     },
                     statorMotora: {
                         name: 'Tube07',
                         edge: 'up', 
                         offset: {x: 0.7, y: 0},
                         isMagneticFieldObject: true,
-                        isMagneticFieldRotationObject: false 
+                        isMagneticFieldRotationObject: false,
+                        displayName: 'Статор мотора'  
                     }, 
                     statorGeneratora: {
                         name: 'Box01',
                         edge: 'up', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false
+                        isMagneticFieldRotationObject: false,
+                        displayName: 'Статор генератора'
                     }, 
                     rotorGeneratora: {
                         name: 'Tube67',
                         edge: 'right', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false 
+                        isMagneticFieldRotationObject: false,
+                        displayName: 'Ротор генератора' 
                     }, 
                     provodnik: {
                         name: 'Line03', 
                         edge: 'bottom', 
                         offset: {x: 0, y: 0},
                         isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false 
+                        isMagneticFieldRotationObject: false,
+                        displayName: 'Проводник' 
                     },
                 });
 
@@ -73,10 +79,12 @@ export default class World{
     introAnimation(){
         const t1 = gsap.timeline({
             onComplete: () => {
-                this.twoPhasesGenerator.animation.actions.current.play();
-                this.rollingAudio = new Audio(rollingSound);
-                this.rollingAudio.loop = true;
-                this.rollingAudio.play();
+                setTimeout(() => {
+                    this.twoPhasesGenerator.setAnimation();
+                    this.rollingAudio = new Audio(rollingSound);
+                    this.rollingAudio.loop = true;
+                    this.rollingAudio.play();
+                }, 1000);
                 this.envronment.ambientLight.intensity = 1.5;
                 this.envronment.sunLight.intensity = 5;
             }

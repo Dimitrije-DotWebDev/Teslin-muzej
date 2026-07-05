@@ -3,6 +3,8 @@ import Experience from '../Experience';
 import { Hotspot } from './Hotspot';
 import ArtisticMagneticField from './ArtisticMagneticField';
 import EngineeringMagneticField from './EngineeringMagneticField';
+import LoadingScreen from '../Utils/LoadingScreen';
+import gsap from 'gsap';
 
 export default class Generator{
     constructor(position, key, hotspotPartNames){
@@ -15,10 +17,13 @@ export default class Generator{
         this.hotspotPartNames = hotspotPartNames;
         this.debug = this.Experience.debug;
         this.setModel();
-        this.setAnimation();
+        //this.setAnimation();
         this.setHotspots();
+        this.activeFieldSystem = null;
+        this.magneticField = new ArtisticMagneticField(this);
+        this.activeFieldSystem = this.magneticField;
+        this.LoadingScreen = new LoadingScreen();
         this.setDebug();
-        this.magneticField = new EngineeringMagneticField(this);
     }
 
     setModel(){
@@ -91,7 +96,7 @@ export default class Generator{
 
             const hotspot = new Hotspot(
                 pos,
-                key,
+                this.hotspotPartNames[key].displayName || key,
                 offset,
                 0xff0000,
                 0.2
@@ -100,56 +105,212 @@ export default class Generator{
             this.hotspots.push(hotspot);
         }
     }
-    setAnimation(){
+    setAnimation() {
         this.animation = {};
         this.animation.mixer = new THREE.AnimationMixer(this.model);
+        this.animation.setActionTimeScale = (action, target, duration = 0.8, delay = 0) => {
 
-        this.animation.actions = {};
-        this.animation.actions.generate = this.animation.mixer.clipAction(this.resource.animations[0]);
+            if (!action) return;
 
-        this.animation.actions.current = this.animation.actions.generate;  
-        this.animation.play = (name) => {
-            const newAction = this.animation.actions[name];
-            const oldAction = this.animation.actions.current;
-            if(newAction !== oldAction){
-                newAction.reset();
-                newAction.play();
-                newAction.croosFadeFrom(oldAction, 1);
-            }
+            gsap.to(action, {
+                timeScale: target,
+                duration: duration,
+                delay: delay,
+                ease: "power2.inOut"
+            });
         };
+        this.animation.actions = {};
+
+        // CLIPS
+        const clips = this.resource.animations;
+
+        // 1. Generator (index 0)
+        this.animation.actions.generator = this.animation.mixer.clipAction(clips[0]);
+        this.animation.actions.generator.loop = THREE.LoopRepeat;
+        this.animation.actions.generator.timeScale = 0;
+        this.animation.actions.generator.play();
+
+        // 2. Motor (index 1)
+        this.animation.actions.motor = this.animation.mixer.clipAction(clips[1]);
+        this.animation.actions.motor.loop = THREE.LoopRepeat;
+        this.animation.actions.motor.timeScale = 0;
+        this.animation.actions.motor.play();
+        // start both
+        
+        
+        this.animation.setActionTimeScale(this.animation.actions.motor, 1, 5);
+        this.animation.setActionTimeScale(this.animation.actions.generator, 1, 3, 1.5);
+
+        // default references
+        this.animation.generator = this.animation.actions.generator;
+        this.animation.motor = this.animation.actions.motor;
     }
-    setDebug(){
+    setDebug() {
 
-        if(!this.debug.active) return;
+        if (!this.debug.active) return;
 
-        this.debugFolder = this.debug.ui.addFolder('Generator Hotspots');
+        this.debugFolder = this.debug.ui.addFolder('Генератор');
 
-        for(const key in this.hotspotMeshes){
+        // =========================
+        // Generator on/off toggle
+        // =========================
+        this.debugParams = {
+            приказ: 'Уметнички'
+        };
+        this.debugParams.power = true;
+
+        const container = this.debugFolder.domElement;
+
+        const el = document.createElement('li');
+        el.className = 'magnet-switch on';
+
+        el.innerHTML = `
+                <span>Систем</span>
+                <div class="magnet-switch-track">
+                    <div class="magnet-switch-knob"></div>
+                </div>
+        `;
+
+        this.debugFolder.__ul.appendChild(el);
+
+        el.addEventListener('click', () => {
+
+            this.debugParams.power = !this.debugParams.power;
+
+            el.classList.toggle('on', this.debugParams.power);
+
+            if (this.debugParams.power) {
+
+                // ▶ START
+                this.animation.setActionTimeScale(this.animation.motor, 1, 5);
+                this.animation.setActionTimeScale(this.animation.generator, this.debugParams.fieldPolarity,3,1.5);
+
+            } else {
+
+                // ⛔ STOP
+                this.animation.setActionTimeScale(this.animation.actions.motor, 0, 5);
+                this.animation.setActionTimeScale(this.animation.actions.generator, 0, 3, 2);
+            }
+        });
+
+        // =========================
+        // 🎛 SCENE SWITCH TOGGLE
+        // =========================
+
+        this.debugFolder
+            .add(this.debugParams, 'приказ', ['Уметнички', 'Инжењерски'])
+            .name('Приказ')
+            .onChange(async (value) => {
+
+                if (value === 'Уметнички') {
+                    await this.switchScene('artistic');
+                }
+
+                if (value === 'Инжењерски') {
+                    await this.switchScene('engineering');
+                }
+            });
+
+        
+
+
+        // =========================
+        // 🧲 FIELD POLARITY TOGGLE
+        // =========================
+
+        this.debugParams.fieldPolarity = 1; // 1 = normal, -1 = inverted
+
+        this.debugFolder
+            .add(this.debugParams, 'fieldPolarity', {
+                'Позитиван': 1,
+                'Негативан': -1
+            })
+            .name('Поларитет')
+            .onChange((value) => {
+
+                this.debugParams.fieldPolarity = value;
+
+                // 🔁 samo generator menja smer
+                if (this.animation?.generator) {
+                    this.animation.setActionTimeScale(this.animation.actions.generator, value, 3);
+                }
+            });
+
+        // =========================
+        // 🎨 HOTSPOT COLORS
+        // =========================
+        this.debugParams.hotspotsVisible = true;
+        
+        const hotspotFolder = this.debugFolder.addFolder('Тачке интеракције');
+        
+        hotspotFolder.add(this.debugParams, 'hotspotsVisible')
+            .name('Видљиве')
+            .onChange((value) => {
+
+                if (!this.hotspots) return;
+
+                this.hotspots.forEach(h => {
+                    h.setVisible(value);
+                });
+            });
+        for (const key in this.hotspotMeshes) {
 
             const mesh = this.hotspotMeshes[key];
-
             const params = {
                 color: `#${mesh.material.emissive.getHexString()}`
             };
 
-            this.debugFolder
+            hotspotFolder
                 .addColor(params, 'color')
-                .name(key)
-                .onChange((value)=>{
+                .name(this.hotspotPartNames[key].displayName || key)
+                .onChange((value) => {
+
                     mesh.material.emissive.set(value);
                     mesh.material.emissiveIntensity = 0.15;
                     mesh.material.needsUpdate = true;
                 });
         }
+    }
+    async switchScene(target = "artistic") {
 
+        this.LoadingScreen.show();
+
+        // 1. CLEAN CURRENT
+        if (this.activeFieldSystem?.destroy) {
+            this.activeFieldSystem.destroy();
+            this.activeFieldSystem = null;
+        }
+        this.LoadingScreen.setProgress(0.1);
+
+        // 2. small GPU sync delay (bitno!)
+        await new Promise(r => setTimeout(r, 50));
+        
+        this.LoadingScreen.setProgress(0.35)
+        // 3. CREATE NEW SYSTEM
+        if (target === "artistic") {
+            this.magneticField = new ArtisticMagneticField(this);
+            this.activeFieldSystem = this.magneticField;
+        }
+        
+        if (target === "engineering") {
+            this.engineeringField = new EngineeringMagneticField(this);
+            this.activeFieldSystem = this.engineeringField;
+        }
+
+        this.LoadingScreen.setProgress(0.8);
+        
+        
+        setTimeout(() => {
+            this.LoadingScreen.hide();
+        }, 1000);
     }
     update(){
-        this.animation.mixer.update(this.time.delta *0.001);
+        this.animation?.mixer?.update(this.time.delta *0.001);
 
         if(this.hotspots){
             this.hotspots.forEach(h => h.update());
         }
 
-        this.magneticField.update();
+        this.activeFieldSystem?.update();
     }
 }

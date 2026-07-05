@@ -397,6 +397,21 @@ export default class EngineeringMagneticField{
         // apply to rotor
         this.virtualMagnet.rotation.y = this.rotorAngle;
     }
+    destroy() {
+
+        if (this.fieldShader) {
+            this.engineeringRoot.remove(this.fieldShader);
+            this.fieldShader.geometry.dispose();
+            this.fieldShader.material.dispose();
+        }
+
+        if (this.virtualMagnet) {
+            this.engineeringRoot.remove(this.virtualMagnet);
+        }
+
+        this.coils = [];
+        this.fieldUniforms = null;
+    }
     update(){
 
         // 1. read generator rotation

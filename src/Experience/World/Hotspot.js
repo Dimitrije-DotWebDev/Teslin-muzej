@@ -74,7 +74,19 @@ export class Hotspot {
         this.label.position.copy(this.position.clone().add(this.lineOffset));
         this.scene.add(this.label);  
     }
+    setVisible(state) {
 
+        this.mesh.visible = state;
+        this.ripple.visible = state;
+        this.line.visible = state;
+        this.label.visible = state;
+    }
+
+    toggle() {
+        const next = !this.mesh.visible;
+        this.setVisible(next);
+        return next;
+    }
     update() {
         const elapsed = this.time.elapsed;
 

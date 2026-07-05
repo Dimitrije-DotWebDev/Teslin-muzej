@@ -51,8 +51,6 @@ export default class ArtisticMagneticField{
 
                 varying float vWave;
                 varying float vHeight;
-                varying float vTheta;
-                varying float vY;
 
                 void main() {
 
@@ -86,89 +84,36 @@ export default class ArtisticMagneticField{
                     vec3 displaced = normal * wave;
 
                     vWave = wave;
-                    vTheta = theta;
-                    vY = y;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position + displaced, 1.0);
                 }
             `,
 
             fragmentShader: `
-                uniform float uTime;
-                uniform float uRotorAngle;
-
                 varying float vWave;
                 varying float vHeight;
-                varying float vTheta;
-                varying float vY;
 
                 void main() {
 
-                    // 🧠 stabilizacija i redistribucija (kraći polovi)
-                    float h = vHeight;
-                    h = smoothstep(0.0, 1.0, h);
+                    float h = smoothstep(0.0, 1.0, vHeight);
 
-                    // 🔥 zgušnjavanje sredine, skraćivanje krajeva
-                    h = pow(h, 0.85);
+                    // intenzitet severnog pola
+                    float north = pow(1.0 - h, 2.2);
 
-                    // 🌈 MAGNETNI SPEKTRUM (balansirane zone)
+                    // intenzitet južnog pola
+                    float south = pow(h, 2.2);
 
-                    vec3 color;
-                    float flow =
-                        sin(
-                            vTheta * 18.0
-                            + vY * 2.5
-                            - uTime * 6.0
-                            + uRotorAngle * 3.0
-                        );
+                    vec3 blue = vec3(0.15, 0.55, 1.0);
+                    vec3 red  = vec3(1.0, 0.20, 0.25);
 
-                    // tanke linije
-                    // 🧲 koncentracija oko polova
-                    float poleMask = pow(abs(vHeight - 0.5) * 2.0, 2.5);
+                    vec3 color =
+                        blue * north
+                        + red  * south;
 
-                    // 🌪 spiral distortion
-                    float spiral =
-                        sin(vTheta * 2.0 + vY * 1.5 + uTime * 2.0) * 0.15;
+                    // energy shimmer
+                    color += abs(vWave) * 0.10;
 
-                    flow *= poleMask + spiral;
-
-                    // pojačanje kod polova
-                    flow *= pow(abs(vHeight - 0.5) * 2.0, 1.5);
-                    if (h < 0.15) {
-                        color = mix(
-                            vec3(0.2, 0.6, 1.0),   // blue
-                            vec3(0.2, 1.0, 0.9),   // cyan
-                            h / 0.15
-                        );
-                    }
-                    else if (h < 0.45) {
-                        color = mix(
-                            vec3(0.2, 1.0, 0.9),   // cyan
-                            vec3(0.2, 1.0, 0.3),   // green
-                            (h - 0.15) / 0.30
-                        );
-                    }
-                    else if (h < 0.75) {
-                        color = mix(
-                            vec3(0.2, 1.0, 0.3),   // green
-                            vec3(1.0, 0.9, 0.2),   // yellow
-                            (h - 0.45) / 0.30
-                        );
-                    }
-                    else {
-                        color = mix(
-                            vec3(1.0, 0.9, 0.2),   // yellow
-                            vec3(1.0, 0.2, 0.3),   // red
-                            (h - 0.75) / 0.25
-                        );
-                    }
-
-                    // 🌊 wave energy overlay
-                    color += abs(vWave) * 0.12 * vec3(0.2, 0.3, 0.4);
-                    // ⚡ energy flow glow
-                    color += flow * vec3(0.8, 0.95, 1.0) * 0.35;
                     gl_FragColor = vec4(color, 0.4);
-                }
-            `
+                }`
         });
     }
     setOuterShell() {
@@ -245,30 +190,18 @@ export default class ArtisticMagneticField{
 
                 void main() {
 
-                    vec3 blue   = vec3(0.2, 0.6, 1.0);
-                    vec3 cyan   = vec3(0.2, 1.0, 0.9);
-                    vec3 green  = vec3(0.2, 1.0, 0.3);
-                    vec3 yellow = vec3(1.0, 0.9, 0.2);
-                    vec3 red    = vec3(1.0, 0.2, 0.3);
-
                     float h = smoothstep(0.0, 1.0, vHeight);
 
-                    vec3 color;
+                    float north = pow(1.0 - h, 2.2);
+                    float south = pow(h, 2.2);
 
-                    if (h < 0.15) {
-                        color = mix(blue, cyan, h / 0.15);
-                    }
-                    else if (h < 0.45) {
-                        color = mix(cyan, green, (h - 0.15) / 0.30);
-                    }
-                    else if (h < 0.75) {
-                        color = mix(green, yellow, (h - 0.45) / 0.30);
-                    }
-                    else {
-                        color = mix(yellow, red, (h - 0.75) / 0.25);
-                    }
+                    vec3 blue = vec3(0.15, 0.55, 1.0);
+                    vec3 red  = vec3(1.0, 0.20, 0.25);
 
-                    // 🌫 atmospheric fresnel glow
+                    vec3 color =
+                        blue * north
+                        + red  * south;
+
                     float alpha = vFresnel * 0.22;
 
                     gl_FragColor = vec4(color, alpha);
@@ -311,13 +244,33 @@ export default class ArtisticMagneticField{
 
         return delta;
     }
+    destroy() {
+
+        // remove meshes
+        if (this.mesh) {
+            this.scene.remove(this.mesh);
+            this.geometry.dispose();
+            this.material.dispose();
+        }
+
+        if (this.outerMesh) {
+            this.scene.remove(this.outerMesh);
+            this.outerGeometry.dispose();
+            this.outerMaterial.dispose();
+        }
+
+        // break references
+        this.mesh = null;
+        this.outerMesh = null;
+        this.material = null;
+        this.outerMaterial = null;
+    }
     update() {
 
-        const speedFactor = 1.05;
+        const leadAngle = THREE.MathUtils.degToRad(8.0) + Math.sin(this.time.elapsed * 0.001 * 2.0) * 0.03;
 
-        const currentAngle = this.magneticFieldRotationObject.rotation.z;
+        const currentAngle = this.magneticFieldRotationObject.rotation.z + Math.PI / 3;
 
-        // 🧠 init
         if (this.previousAngle === undefined) {
             this.previousAngle = currentAngle;
         }
@@ -326,23 +279,25 @@ export default class ArtisticMagneticField{
             this.smoothAngle = currentAngle;
         }
 
-        // 🔁 delta sa wrap korekcijom
-        let delta = this.normalizeAngleDelta(currentAngle, this.previousAngle);
+        const delta = this.normalizeAngleDelta(
+            currentAngle,
+            this.previousAngle
+        );
 
         this.previousAngle = currentAngle;
 
-        // ⚡ kontinuirana faza (GLAVNI FIX)
         this.smoothAngle += delta;
 
-        // 🔥 uniform update
-        this.material.uniforms.uTime.value = this.time.elapsed * 0.001;
+        this.material.uniforms.uTime.value =
+            this.time.elapsed * 0.001;
 
         this.material.uniforms.uRotorAngle.value =
-            this.smoothAngle * speedFactor;
+            this.smoothAngle + leadAngle;
+
         this.outerMaterial.uniforms.uTime.value =
-        this.time.elapsed * 0.001;
+            this.time.elapsed * 0.001;
 
         this.outerMaterial.uniforms.uRotorAngle.value =
-        this.smoothAngle * speedFactor;
+            this.smoothAngle + leadAngle;
     }
 }

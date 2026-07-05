@@ -8,8 +8,8 @@ export default class Environment{
         this.debug = this.experience.debug;
 
         if(this.debug.active){
-            this.debugFolder = this.debug.ui.addFolder("enviornment");
-            this.debugSlideshow = this.debug.ui.addFolder("slideshow");
+            this.debugFolder = this.debug.ui.addFolder("Окружење");
+            this.debugSlideshow = this.debug.ui.addFolder("Позадина");
         }
         this.setSunLight();
         this.setAmbientLight();
@@ -36,25 +36,25 @@ export default class Environment{
         if(this.debug.active){
             this.debugFolder
                 .add(this.sunLight, 'intensity')
-                .name('sunLightIntensity')
+                .name('Интензитет светла')
                 .min(0)
                 .max(10)
                 .step(0.001);
             this.debugFolder
                 .add(this.sunLight.position, 'x')
-                .name('sunLightX')
+                .name('Позиција светла (лево/десно)')
                 .min(-100)
                 .max(100)
                 .step(0.001);
             this.debugFolder
                 .add(this.sunLight.position, 'y')
-                .name('sunLightY')
+                .name('Позиција светла (горе/доле)')
                 .min(-100)
                 .max(100)
                 .step(0.001);
             this.debugFolder
                 .add(this.sunLight.position, 'z')
-                .name('sunLightZ')
+                .name('Позиција светла (напред/назад)')
                 .min(-100)
                 .max(100)
                 .step(0.001);
@@ -66,7 +66,7 @@ export default class Environment{
         if(this.debug.active){
             this.debugFolder
                 .add(this.ambientLight, 'intensity')
-                .name('ambientLightIntensity')
+                .name('Амбијентално светло')
                 .min(0)
                 .max(10)
                 .step(0.001);
@@ -138,7 +138,7 @@ export default class Environment{
 
             this.debugSlideshow
                 .add(this.SlideShowInterval, 'value')
-                .name('Slideshow interval')
+                .name('Промена позадине (секунде)')
                 .min(1)
                 .max(15)
                 .step(1)
@@ -147,7 +147,7 @@ export default class Environment{
                 });
             this.debugSlideshow
                 .add(this.SlideshowOpacity, 'value')
-                .name('Slideshow darkness')
+                .name('Тамнина позадине')
                 .min(0)
                 .max(100)
                 .step(1)
@@ -163,7 +163,7 @@ export default class Environment{
                 };
 
                 this.debugSlideshow.add(uploadObj, 'Upload_Image')
-                    .name('Add Image From PC');
+                    .name('Додај слику са рачунара');
             }
         }
     }
