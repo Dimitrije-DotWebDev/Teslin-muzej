@@ -286,3 +286,70 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
+*.zip
+
+
+
+
+############################################
+# OS FILES
+############################################
+
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
+
+############################################
+# DATABASE / LOCAL FILES
+############################################
+
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+############################################
+# NODE (ako ima frontend)
+############################################
+
+node_modules/
+dist/
+build/
+
+############################################
+# BACKUP / TEMP FILES
+############################################
+
+*~
+*.tmp
+*.bak
+
+############################################
+# OPTIONAL (CI / DEPLOY)
+############################################
+
+publish/
+
+############################################
+# BACKEND .NET CORE
+############################################
+
+Backend/**/bin/
+Backend/**/obj/
+
+**/bin/
+**/obj/
+
+*.dll
+*.pdb
+
+############################################
+# EF / EF CORE GENERATED
+############################################
+
+*.cache
+*.assets.cache
+project.assets.json
+project.nuget.cache
+*.csproj.CoreCompileInputs.cache
+*.csproj.AssemblyReference.cache

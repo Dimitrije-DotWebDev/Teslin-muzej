@@ -210,3 +210,14 @@ html,body{
         font-size: 32px;
     }
 }
+
+.hotspot-overlay { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+.hotspot-connector { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; visibility: hidden; }
+.hotspot-connector path { fill: none; stroke: #8be5ff; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.hotspot-connector circle { fill: #d8f7ff; stroke: #5edbff; stroke-width: 2; }
+.hotspot-panel { position: absolute; box-sizing: border-box; width: min(300px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; padding: 20px; color: #edf8ff; background: rgba(9, 20, 32, .96); border: 1px solid rgba(139, 229, 255, .5); border-radius: 14px; box-shadow: 0 12px 40px #0006; pointer-events: auto; font-family: Arial, sans-serif; transform-origin: center; }
+.hotspot-panel[hidden] { display: none; }
+.hotspot-panel h2 { margin: 0 24px 10px 0; font-size: 18px; line-height: 1.35; }
+.hotspot-panel p { margin: 0; font-size: 14px; line-height: 1.65; color: #c4d5e4; }
+.hotspot-close { position: absolute; top: 7px; right: 7px; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #c4d5e4; font-size: 25px; cursor: pointer; }
+.hotspot-close:hover, .hotspot-close:focus-visible { color: white; background: #ffffff18; outline: 2px solid #8be5ff; }

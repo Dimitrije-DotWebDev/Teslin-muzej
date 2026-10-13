@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import Experience from '../Experience';
-import { Hotspot } from './Hotspot';
+import HotspotController from './HotspotController';
 import ArtisticMagneticField from './ArtisticMagneticField';
 import EngineeringMagneticField from './EngineeringMagneticField';
 import LoadingScreen from '../Utils/LoadingScreen';
@@ -40,6 +40,7 @@ export default class Generator{
     setHotspots() {
         this.hotspotMeshes = {};
         this.hotspots = [];
+        this.hotspotController = new HotspotController(this.Experience, this.model);
 
         for(const key in this.hotspotPartNames){
 
@@ -53,6 +54,11 @@ export default class Generator{
                 this.magneticFieldRotationObject = mesh;
             }
             if(!mesh) continue;
+            const targets = [...new Set((data.targetNames || [data.name]).map(name => {
+                const target = this.model.getObjectByName(name);
+                if (!target) throw new Error('Unknown hotspot target: ' + name);
+                return target;
+            }))];
             this.hotspotMeshes[key] = mesh;
             this.model.updateWorldMatrix(true, true);
             const box = new THREE.Box3().setFromObject(mesh);
@@ -92,16 +98,13 @@ export default class Generator{
 
             }
 
-            const offset = new THREE.Vector3(0.5,0.5,0);
-
-            const hotspot = new Hotspot(
-                pos,
-                this.hotspotPartNames[key].displayName || key,
-                offset,
-                0xff0000,
-                0.2
-            );
-
+            const hotspot = this.hotspotController.add({
+                target: mesh,
+                targets,
+                position: pos,
+                title: data.displayName || key,
+                description: data.description || ''
+            });
             this.hotspots.push(hotspot);
         }
     }
@@ -249,9 +252,7 @@ export default class Generator{
 
                 if (!this.hotspots) return;
 
-                this.hotspots.forEach(h => {
-                    h.setVisible(value);
-                });
+                this.hotspotController.setVisible(value);
             });
         for (const key in this.hotspotMeshes) {
 
@@ -265,7 +266,7 @@ export default class Generator{
                 .name(this.hotspotPartNames[key].displayName || key)
                 .onChange((value) => {
 
-                    mesh.material.emissive.set(value);
+                    this.hotspots.find(hotspot => hotspot.target === mesh)?.setBaseColor(value);
                     mesh.material.emissiveIntensity = 0.15;
                     mesh.material.needsUpdate = true;
                 });
@@ -307,9 +308,7 @@ export default class Generator{
     update(){
         this.animation?.mixer?.update(this.time.delta *0.001);
 
-        if(this.hotspots){
-            this.hotspots.forEach(h => h.update());
-        }
+        this.hotspotController?.update();
 
         this.activeFieldSystem?.update();
     }

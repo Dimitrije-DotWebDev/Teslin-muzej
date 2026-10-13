@@ -54,7 +54,8 @@ export default class Experience{
 
     destroy(){
         this.sizes.off('resize');
-        this.sizes.off('tick');
+        this.time.off('tick');
+        this.world.twoPhasesGenerator?.hotspotController?.dispose();
 
         this.scene.traverse((child)=>{
             if(child.isMesh){
@@ -71,7 +72,8 @@ export default class Experience{
 
         this.camera.controls.dispose();
         
-        this.renderer.dispose();
+        this.renderer.instance.dispose();
+        this.cssRenderer.instance.domElement.remove();
 
         if(this.debug.active){
             this.debug.ui.destroy();

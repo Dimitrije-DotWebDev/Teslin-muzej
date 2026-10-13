@@ -1,3 +1,4 @@
+import twoPhaseMotor from '../config/twoPhaseMotor';
 import * as THREE from 'three';
 import Experience from "../Experience.js";
 import Environment from './Environment.js';
@@ -17,56 +18,7 @@ export default class World{
             this.twoPhasesGenerator = new Generator(
                 new THREE.Vector3(0,1.33,0),
                 'twoPhasesGeneratorModel',
-                {
-                    navojiMotora: {
-                        name: 'Tube64',
-                        edge: 'right', 
-                        offset: {x: -0.5, y: 0},
-                        isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false,
-                        displayName: 'Навоји мотора' 
-                    }, 
-                    rotorMotora: {
-                        name: 'Tube54',
-                        edge: 'up', 
-                        offset: {x: 0, y: 0},
-                        isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: true,
-                        displayName: 'Ротор мотора'  
-                    },
-                    statorMotora: {
-                        name: 'Tube07',
-                        edge: 'up', 
-                        offset: {x: 0.7, y: 0},
-                        isMagneticFieldObject: true,
-                        isMagneticFieldRotationObject: false,
-                        displayName: 'Статор мотора'  
-                    }, 
-                    statorGeneratora: {
-                        name: 'Box01',
-                        edge: 'up', 
-                        offset: {x: 0, y: 0},
-                        isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false,
-                        displayName: 'Статор генератора'
-                    }, 
-                    rotorGeneratora: {
-                        name: 'Tube67',
-                        edge: 'right', 
-                        offset: {x: 0, y: 0},
-                        isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false,
-                        displayName: 'Ротор генератора' 
-                    }, 
-                    provodnik: {
-                        name: 'Line03', 
-                        edge: 'bottom', 
-                        offset: {x: 0, y: 0},
-                        isMagneticFieldObject: false,
-                        isMagneticFieldRotationObject: false,
-                        displayName: 'Проводник' 
-                    },
-                });
+                twoPhaseMotor);
 
             this.floor = new Floor();
             this.addStartButtonEventListener();
