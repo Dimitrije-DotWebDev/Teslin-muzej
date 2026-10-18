@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import Experience from "../Experience.js";
 
 export default class ArtisticMagneticField{
-    constructor(generator){
+    constructor(exhibit){
         this.Experience = new Experience();
-        this.generator = generator;
-        this.fieldContext = this.generator.fieldContext;
+        this.exhibit = exhibit;
+        this.fieldContext = this.exhibit.fieldContext;
         this.time = this.Experience.time;
         this.setMesh();
         this.setOuterShell();

@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import Experience from "../Experience.js";
 
 export default class EngineeringMagneticField{
-    constructor(generator){
+    constructor(exhibit){
         this.Experience = new Experience();
-        this.generator = generator;
-        this.fieldContext = this.generator.fieldContext;
-        this.config = this.generator.config.field.engineering;
+        this.exhibit = exhibit;
+        this.fieldContext = this.exhibit.fieldContext;
+        this.config = this.exhibit.config.field.engineering;
 
         this.virtualMagnet = null;
 
@@ -48,7 +48,7 @@ export default class EngineeringMagneticField{
             Math.sin(this.fieldAngle)
         );
     }
-    getGeneratorAngle() {
+    getMotorAngle() {
 
         return this.fieldContext.angle;
     }
@@ -309,7 +309,7 @@ export default class EngineeringMagneticField{
     }
     updateFieldAngle() {
 
-        this.fieldAngle = this.getGeneratorAngle();
+        this.fieldAngle = this.getMotorAngle();
     }
     
     updateFieldShader() {
@@ -410,13 +410,8 @@ export default class EngineeringMagneticField{
     }
     update(){
 
-        // 1. read generator rotation
         this.updateFieldAngle();
-
-        // 2. shader reacts
         this.updateFieldShader();
-
-        // 3. virtual magnet reacts
         this.updateRotorCoupling();
     }
 

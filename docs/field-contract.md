@@ -1,6 +1,6 @@
 # Magnetic field configuration contract
 
-Magnetic field placement and visualization parameters are stored in the backend and edited through the admin panel. The GLB model only needs stable `museumPartId` values and the animation that rotates the selected generator part.
+Magnetic field placement and visualization parameters are stored in the backend and edited through the admin panel. The GLB model only needs stable `museumPartId` values and the animation that rotates the selected motor part.
 
 ## API representation
 
@@ -33,7 +33,7 @@ Magnetic field placement and visualization parameters are stored in the backend 
 
 ## Rotation coupling
 
-`rotationPartId` identifies the already animated generator or rotor part. The runtime reads the selected local rotation axis and calculates both angle and angular velocity from consecutive animation frames.
+`rotationPartId` identifies the already animated motor or rotor part. The runtime reads the selected local rotation axis and calculates both angle and angular velocity from consecutive animation frames.
 
 The displayed angle is:
 
@@ -64,7 +64,7 @@ The virtual magnet and torque vector can be hidden independently without changin
 
 1. Load the GLB model.
 2. Select a reference part.
-3. Select the animated generator part.
+3. Select the animated motor part.
 4. Move, rotate and scale the field proxy with the gizmo.
 5. Switch between artistic and engineering preview.
 6. Set phase and engineering parameters.

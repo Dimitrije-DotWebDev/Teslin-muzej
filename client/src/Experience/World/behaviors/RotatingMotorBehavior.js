@@ -42,13 +42,15 @@ export default class RotatingMotorBehavior {
             return { clip, action };
         });
 
-        const generatorEntry = this.animation.actions.find(({ clip }) =>
-            clip.name.toLowerCase().includes('generator')) ?? this.animation.actions[0];
-        const motorEntry = this.animation.actions.find(({ clip }) =>
-            clip.name.toLowerCase().includes('motor') && clip !== generatorEntry?.clip);
+        const motorNamedEntry = this.animation.actions.find(({ clip }) =>
+            clip.name.toLowerCase().includes('motor'));
+        const generatorNamedEntry = this.animation.actions.find(({ clip }) =>
+            clip.name.toLowerCase().includes('generator'));
 
-        this.animation.generator = generatorEntry?.action ?? null;
-        this.animation.motor = motorEntry?.action ?? null;
+        this.animation.generator = motorNamedEntry?.action ?? null;
+        this.animation.motor = generatorNamedEntry?.action
+            ?? (motorNamedEntry ? null : this.animation.actions[0]?.action)
+            ?? null;
 
         this.animation.actions.forEach(({ action }) => {
             if (action === this.animation.generator || action === this.animation.motor) return;
@@ -59,7 +61,7 @@ export default class RotatingMotorBehavior {
     }
 
     setControls() {
-        this.controlsFolder = this.exhibit.debug.getControls().addFolder('Генератор');
+        this.controlsFolder = this.exhibit.debug.getControls().addFolder('Мотор');
         this.controlsParams = {
             приказ: 'Уметнички',
             power: true,
@@ -85,7 +87,7 @@ export default class RotatingMotorBehavior {
 
             if (this.controlsParams.power) {
                 this.animation.actions.forEach(({ action }) => {
-                    const target = action === this.animation.generator
+                    const target = action === this.animation.motor
                         ? this.controlsParams.fieldPolarity
                         : 1;
                     this.animation.setActionTimeScale(action, target, 3, 1.5);
@@ -114,8 +116,8 @@ export default class RotatingMotorBehavior {
             .onChange((value) => {
                 this.controlsParams.fieldPolarity = value;
 
-                if (this.animation?.generator) {
-                    this.animation.setActionTimeScale(this.animation.generator, value, 3);
+                if (this.animation?.motor) {
+                    this.animation.setActionTimeScale(this.animation.motor, value, 3);
                 }
             });
 
