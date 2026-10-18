@@ -26,6 +26,7 @@ export default class RotatingMotorBehavior {
         this.animation.setActionTimeScale = (action, target, duration = 0.8, delay = 0) => {
             if (!action) return;
 
+            gsap.killTweensOf(action, 'timeScale');
             gsap.to(action, {
                 timeScale: target,
                 duration,
@@ -56,8 +57,18 @@ export default class RotatingMotorBehavior {
             if (action === this.animation.generator || action === this.animation.motor) return;
             this.animation.setActionTimeScale(action, 1, 3);
         });
-        this.animation.setActionTimeScale(this.animation.motor, 1, 5);
-        this.animation.setActionTimeScale(this.animation.generator, 1, 3, 1.5);
+        this.startRotorAnimations();
+    }
+
+    startRotorAnimations() {
+        const motorDelay = this.animation.generator ? 1.5 : 0;
+
+        this.animation.setActionTimeScale(
+            this.animation.generator,
+            this.controlsParams.fieldPolarity,
+            5
+        );
+        this.animation.setActionTimeScale(this.animation.motor, 1, 3, motorDelay);
     }
 
     setControls() {
@@ -87,11 +98,10 @@ export default class RotatingMotorBehavior {
 
             if (this.controlsParams.power) {
                 this.animation.actions.forEach(({ action }) => {
-                    const target = action === this.animation.motor
-                        ? this.controlsParams.fieldPolarity
-                        : 1;
-                    this.animation.setActionTimeScale(action, target, 3, 1.5);
+                    if (action === this.animation.generator || action === this.animation.motor) return;
+                    this.animation.setActionTimeScale(action, 1, 3);
                 });
+                this.startRotorAnimations();
                 return;
             }
 
@@ -116,8 +126,8 @@ export default class RotatingMotorBehavior {
             .onChange((value) => {
                 this.controlsParams.fieldPolarity = value;
 
-                if (this.animation?.motor) {
-                    this.animation.setActionTimeScale(this.animation.motor, value, 3);
+                if (this.controlsParams.power && this.animation?.generator) {
+                    this.animation.setActionTimeScale(this.animation.generator, value, 3);
                 }
             });
 
@@ -152,6 +162,7 @@ export default class RotatingMotorBehavior {
     }
 
     dispose() {
+        this.animation?.actions?.forEach(({ action }) => gsap.killTweensOf(action));
         this.animation?.mixer?.stopAllAction();
     }
 }
