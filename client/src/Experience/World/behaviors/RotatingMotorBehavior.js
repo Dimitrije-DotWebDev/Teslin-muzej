@@ -65,10 +65,15 @@ export default class RotatingMotorBehavior {
 
         this.animation.setActionTimeScale(
             this.animation.generator,
-            this.controlsParams.fieldPolarity,
+            1,
             5
         );
-        this.animation.setActionTimeScale(this.animation.motor, 1, 3, motorDelay);
+        this.animation.setActionTimeScale(
+            this.animation.motor,
+            this.controlsParams.fieldPolarity,
+            3,
+            motorDelay
+        );
     }
 
     setControls() {
@@ -126,8 +131,8 @@ export default class RotatingMotorBehavior {
             .onChange((value) => {
                 this.controlsParams.fieldPolarity = value;
 
-                if (this.controlsParams.power && this.animation?.generator) {
-                    this.animation.setActionTimeScale(this.animation.generator, value, 3);
+                if (this.controlsParams.power && this.animation?.motor) {
+                    this.animation.setActionTimeScale(this.animation.motor, value, 3);
                 }
             });
 
