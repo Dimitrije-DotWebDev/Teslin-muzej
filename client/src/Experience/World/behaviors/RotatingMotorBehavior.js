@@ -47,10 +47,10 @@ export default class RotatingMotorBehavior {
         const generatorNamedEntry = this.animation.actions.find(({ clip }) =>
             clip.name.toLowerCase().includes('generator'));
 
-        this.animation.generator = motorNamedEntry?.action ?? null;
-        this.animation.motor = generatorNamedEntry?.action
-            ?? (motorNamedEntry ? null : this.animation.actions[0]?.action)
+        this.animation.motor = motorNamedEntry?.action
+            ?? (generatorNamedEntry ? null : this.animation.actions[0]?.action)
             ?? null;
+        this.animation.generator = generatorNamedEntry?.action ?? null;
 
         this.animation.actions.forEach(({ action }) => {
             if (action === this.animation.generator || action === this.animation.motor) return;
