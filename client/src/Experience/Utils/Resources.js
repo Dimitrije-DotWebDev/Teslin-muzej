@@ -8,6 +8,7 @@ export default class Resources extends EventEmitter{
 
         this.sources = sources;
         this.items = {};
+        this.modelPromises = new Map();
         this.toLoad = this.sources.length;
         this.loaded = 0;
         this.setLoaders();
@@ -60,5 +61,26 @@ export default class Resources extends EventEmitter{
         if(this.loaded == this.toLoad){
             this.trigger("ready");
         }
+    }
+
+    loadModel(path, onProgress) {
+        if (this.modelPromises.has(path)) return this.modelPromises.get(path);
+
+        const request = new Promise((resolve, reject) => {
+            this.loaders.gltfLoader.load(
+                path,
+                resolve,
+                (event) => {
+                    if (!event.lengthComputable || !onProgress) return;
+                    onProgress(event.loaded / event.total);
+                },
+                reject
+            );
+        });
+
+        this.modelPromises.set(path, request);
+        request.catch(() => this.modelPromises.delete(path));
+
+        return request;
     }
 }

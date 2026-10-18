@@ -4,22 +4,38 @@ export default class Debug{
         this.active = window.location.hash === '#debug';
         if(this.active){
             this.ui = new GUI();
-            const closeBtn = this.ui.__closeButton;
-
-            if (closeBtn) {
-                const updateText = () => {
-                    console.log(this.ui);
-                    closeBtn.innerHTML = this.ui.closed
-                        ? 'Отвори контролу'
-                        : 'Затвори контролу';
-                };
-
-                updateText();
-
-                closeBtn.addEventListener('click', () => {
-                    setTimeout(updateText, 0);
-                });
-            }
+            this.setCloseButtonText(this.ui);
         }
+    }
+
+    getControls(){
+        if(this.active) return this.ui;
+
+        if(!this.controls){
+            this.controls = new GUI();
+            this.setCloseButtonText(this.controls);
+        }
+
+        return this.controls;
+    }
+
+    setCloseButtonText(gui){
+        const closeBtn = gui.__closeButton;
+
+        if (!closeBtn) return;
+
+        const updateText = () => {
+            closeBtn.innerHTML = gui.closed
+                ? 'Отвори контролу'
+                : 'Затвори контролу';
+        };
+
+        updateText();
+        closeBtn.addEventListener('click', () => setTimeout(updateText, 0));
+    }
+
+    destroy(){
+        this.controls?.destroy();
+        if(this.ui && this.ui !== this.controls) this.ui.destroy();
     }
 }

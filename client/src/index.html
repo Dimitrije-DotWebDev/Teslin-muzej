@@ -6,10 +6,177 @@
     <title>DOTWEB</title>
 </head>
 <body>
-    <div id="welcome-screen">
-        <h1>Добродошли у веб музеј Николе Тесле</h1>
-        <button id="start-button" class="display-none">ПРЕЗЕНТАЦИЈА ИЗУМА</button>
-    </div>
+    <main id="catalog-screen" hidden>
+        <div class="catalog-shell">
+            <header class="catalog-header">
+                <p class="catalog-kicker">Виртуелна поставка</p>
+                <h1>Теслини изуми</h1>
+                <p class="catalog-intro">Изаберите експонат и истражите његове делове, кретање и магнетно поље.</p>
+            </header>
+            <div class="catalog-grid"></div>
+            <p class="catalog-status" role="status" aria-live="polite"></p>
+        </div>
+    </main>
+    <main id="admin-screen" hidden>
+        <div class="admin-shell">
+            <header class="admin-header">
+                <div>
+                    <p class="catalog-kicker">Управљање поставком</p>
+                    <h1>Експонати</h1>
+                </div>
+                <div class="admin-header-actions">
+                    <button type="button" class="admin-new admin-primary">Нови експонат</button>
+                    <button type="button" class="admin-close admin-secondary">Назад</button>
+                </div>
+            </header>
+            <div class="admin-layout">
+                <section class="admin-list" aria-label="Листа експоната"></section>
+                <div class="admin-editor">
+                    <form class="admin-form" hidden>
+                    <input type="hidden" name="id">
+                    <h2 class="admin-form-title">Нови експонат</h2>
+                    <div class="admin-form-grid">
+                        <label>Назив<input name="title" maxlength="200" required></label>
+                        <label>Slug<input name="slug" maxlength="100" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
+                        <label class="admin-field-wide">Наднаслов<input name="eyebrow" maxlength="200" required></label>
+                        <label class="admin-field-wide">Опис<textarea name="description" maxlength="4000" rows="5" required></textarea></label>
+                        <label>Тип понашања<input name="behaviorType" maxlength="100" required></label>
+                        <label>Редослед<input name="displayOrder" type="number" min="0" value="0" required></label>
+                        <label class="admin-field-wide">Путања до GLB модела
+                            <span class="admin-input-action"><input name="modelPath" maxlength="1000"><button type="button" class="admin-validate-model admin-secondary">Провери</button></span>
+                        </label>
+                        <div class="admin-field-wide admin-thumbnail-field">
+                            <span class="admin-thumbnail-label">Thumbnail</span>
+                            <input name="thumbnailPath" type="hidden">
+                            <div class="admin-thumbnail-controls">
+                                <label class="admin-thumbnail-upload admin-secondary">
+                                    Изабери слику
+                                    <input name="thumbnailFile" type="file" accept="image/jpeg,image/png,image/webp">
+                                </label>
+                                <button type="button" class="admin-thumbnail-remove admin-secondary">Уклони</button>
+                            </div>
+                            <div class="admin-thumbnail-preview" hidden>
+                                <img alt="Преглед thumbnail слике">
+                            </div>
+                            <p class="admin-thumbnail-hint">JPEG, PNG или WebP, највише 5 MB.</p>
+                        </div>
+                    </div>
+                    <section class="admin-field-config">
+                        <header class="admin-subheader">
+                            <div>
+                                <p class="catalog-kicker">Визуелизација</p>
+                                <h2>Магнетно поље</h2>
+                            </div>
+                            <label class="admin-checkbox"><input name="fieldEnabled" type="checkbox" checked>Поље је подешено</label>
+                        </header>
+                        <div class="admin-field-model-editor">
+                            <div class="admin-model-toolbar">
+                                <button type="button" class="admin-field-reload admin-secondary">Учитај модел</button>
+                                <button type="button" class="admin-field-pick-reference admin-secondary">Изабери референтни део</button>
+                                <button type="button" class="admin-field-pick-rotation admin-secondary">Изабери генератор</button>
+                                <button type="button" class="admin-field-translate admin-secondary">Померање</button>
+                                <button type="button" class="admin-field-rotate admin-secondary">Ротација</button>
+                                <button type="button" class="admin-field-scale admin-secondary">Величина</button>
+                                <select class="admin-field-preview" aria-label="Преглед магнетног поља">
+                                    <option value="artistic">Уметнички preview</option>
+                                    <option value="engineering">Инжењерски preview</option>
+                                </select>
+                            </div>
+                            <div class="admin-model-viewport admin-field-viewport">
+                                <canvas class="admin-field-canvas"></canvas>
+                                <p class="admin-field-hint">Учитајте модел да бисте поставили магнетно поље.</p>
+                            </div>
+                            <p class="admin-field-status" role="status" aria-live="polite"></p>
+                        </div>
+                        <div class="admin-form-grid admin-field-values">
+                            <label>Профил
+                                <select name="fieldProfile">
+                                    <option value="rotating-motor">Обртно поље мотора</option>
+                                    <option value="static-dipole">Статички дипол</option>
+                                    <option value="alternating-core">Променљиви флукс језгра</option>
+                                    <option value="linear-field">Линеарно поље</option>
+                                </select>
+                            </label>
+                            <label>Оса ротације
+                                <select name="fieldRotationAxis">
+                                    <option value="x">X</option>
+                                    <option value="y">Y</option>
+                                    <option value="z" selected>Z</option>
+                                </select>
+                            </label>
+                            <label class="admin-field-wide">Референтни museumPartId<input name="fieldReferencePartId" maxlength="200"></label>
+                            <label class="admin-field-wide">MuseumPartId анимираног генератора<input name="fieldRotationPartId" maxlength="200"></label>
+                            <label>Множилац угла<input name="fieldAngleMultiplier" type="number" step="any" value="1"></label>
+                            <label>Фазни померај °<input name="fieldPhaseOffsetDegrees" type="number" step="any" value="0"></label>
+                            <label>Позиција X<input name="fieldPositionX" type="number" step="any" value="0"></label>
+                            <label>Позиција Y<input name="fieldPositionY" type="number" step="any" value="0"></label>
+                            <label>Позиција Z<input name="fieldPositionZ" type="number" step="any" value="0"></label>
+                            <label>Ротација X °<input name="fieldTransformRotationX" type="number" step="any" value="0"></label>
+                            <label>Ротација Y °<input name="fieldTransformRotationY" type="number" step="any" value="0"></label>
+                            <label>Ротација Z °<input name="fieldTransformRotationZ" type="number" step="any" value="0"></label>
+                            <label>Величина X<input name="fieldScaleX" type="number" step="any" min="0.000001" value="1"></label>
+                            <label>Величина Y<input name="fieldScaleY" type="number" step="any" min="0.000001" value="1"></label>
+                            <label>Величина Z<input name="fieldScaleZ" type="number" step="any" min="0.000001" value="1"></label>
+                            <label>Број фаза<input name="fieldPhaseCount" type="number" min="1" max="100" value="2"></label>
+                            <label>Број намотаја<input name="fieldCoilCount" type="number" min="1" max="32" value="8"></label>
+                            <label>Број парова полова<input name="fieldPolePairs" type="number" min="1" max="100" value="1"></label>
+                            <label class="admin-checkbox"><input name="fieldShowVirtualMagnet" type="checkbox" checked>Прикажи виртуелни магнет</label>
+                            <label class="admin-checkbox"><input name="fieldShowTorqueVector" type="checkbox" checked>Прикажи вектор момента</label>
+                        </div>
+                    </section>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-primary">Сачувај нацрт</button>
+                        <button type="button" class="admin-cancel admin-secondary">Откажи</button>
+                    </div>
+                    </form>
+                    <section class="admin-hotspots" hidden>
+                        <header class="admin-subheader">
+                            <div>
+                                <p class="catalog-kicker">Интерактивне тачке</p>
+                                <h2>Hotspot-ови</h2>
+                            </div>
+                            <button type="button" class="admin-hotspot-new admin-primary">Нови hotspot</button>
+                        </header>
+                        <div class="admin-hotspot-list"></div>
+                        <form class="admin-hotspot-form" hidden>
+                            <input type="hidden" name="id">
+                            <h3 class="admin-hotspot-form-title">Нови hotspot</h3>
+                            <div class="admin-model-editor">
+                                <div class="admin-model-toolbar">
+                                    <button type="button" class="admin-model-reload admin-secondary">Учитај модел</button>
+                                    <button type="button" class="admin-pick-anchor admin-secondary">Изабери anchor</button>
+                                    <button type="button" class="admin-pick-targets admin-secondary">Изабери glow делове</button>
+                                    <button type="button" class="admin-clear-targets admin-secondary">Очисти glow избор</button>
+                                </div>
+                                <div class="admin-model-viewport">
+                                    <canvas class="admin-model-canvas"></canvas>
+                                    <p class="admin-model-hint">Учитајте модел да бисте поставили hotspot.</p>
+                                </div>
+                                <p class="admin-model-status" role="status" aria-live="polite"></p>
+                            </div>
+                            <div class="admin-form-grid">
+                                <label>Назив<input name="title" maxlength="200" required></label>
+                                <label>Кључ<input name="key" maxlength="100" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
+                                <label class="admin-field-wide">Опис<textarea name="description" maxlength="4000" rows="4" required></textarea></label>
+                                <label class="admin-field-wide">Anchor museumPartId<input name="anchorPartId" maxlength="200" required></label>
+                                <label>Локална X позиција<input name="positionX" type="number" step="any" required></label>
+                                <label>Локална Y позиција<input name="positionY" type="number" step="any" required></label>
+                                <label>Локална Z позиција<input name="positionZ" type="number" step="any" required></label>
+                                <label>Редослед<input name="displayOrder" type="number" min="0" value="0" required></label>
+                                <label class="admin-field-wide">Glow target museumPartId вредности<textarea name="targetPartIds" rows="5" required placeholder="Један ID по реду"></textarea></label>
+                                <label class="admin-checkbox"><input name="isEnabled" type="checkbox" checked>Hotspot је укључен</label>
+                            </div>
+                            <div class="admin-form-actions">
+                                <button type="submit" class="admin-primary">Сачувај hotspot</button>
+                                <button type="button" class="admin-hotspot-cancel admin-secondary">Откажи</button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </div>
+            <p class="admin-status" role="status" aria-live="polite"></p>
+        </div>
+    </main>
     <div id="loadingScreen" class="hidden">
 
         <div class="loadingTextWrap">

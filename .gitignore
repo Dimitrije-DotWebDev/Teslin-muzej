@@ -307,6 +307,10 @@ $RECYCLE.BIN/
 *.ldf
 *.sqlite
 *.db
+backend/.dotnet-home/
+backend/.nuget-packages/
+backend/.tools/
+backend/TeslaMuseum.Api/wwwroot/uploads/
 
 ############################################
 # NODE (ako ima frontend)

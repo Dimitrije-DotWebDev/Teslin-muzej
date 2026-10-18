@@ -2,13 +2,13 @@
 
 Status: initial working agreement (version 1)
 
-Hotspot sadržaj, pozicija i izbor delova čuvaju se van GLB modela. Lokalna konfiguracija u trenutnom frontendu privremeno predstavlja podatke koje će kasnije vraćati ASP.NET Core API.
+Hotspot sadržaj, pozicija i izbor delova čuvaju se van GLB modela. ASP.NET Core API vraća podatke iz SQLite baze kada korisnik otvori izum.
 
 ## API representation
 
 ```json
 {
-  "id": "c078662a-86f8-4592-b2a1-2e9be631f401",
+  "id": "motor-windings",
   "title": "Намотаји мотора",
   "description": "Намотаји стварају обртно магнетно поље.",
   "anchorPartId": "two-phase-motor.motor-winding-01",
@@ -36,7 +36,7 @@ Hotspot sadržaj, pozicija i izbor delova čuvaju se van GLB modela. Lokalna kon
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `id` | yes | Stabilan hotspot identifikator. Backend koristi GUID. |
+| `id` | yes | Stabilan javni identifikator hotspota unutar izuma. Interni ključ u bazi je GUID. |
 | `title` | yes | Naslov koji se prikazuje posetiocu. |
 | `description` | yes | Tekst panela. U prvoj verziji koristi običan tekst. |
 | `anchorPartId` | yes | `museumPartId` objekta u čijem koordinatnom sistemu je sačuvana pozicija. |
@@ -75,13 +75,13 @@ Hotspot sadržaj, pozicija i izbor delova čuvaju se van GLB modela. Lokalna kon
 
 ## Persistence model
 
-Početni domenski model može imati:
+Domenski model ima:
 
 - `Exhibit` kao vlasnika modela i hotspotova;
 - `Hotspot` sa sadržajem, anchor podatkom i lokalnom pozicijom;
-- `HotspotTarget` kao vezu između hotspota i jednog `museumPartId` identifikatora.
+- `HotspotTargetPart` kao vezu između hotspota i jednog `museumPartId` identifikatora.
 
-Konačan EF Core mapping dogovorićemo kada budemo pravili backend. API ugovor ne treba da zavisi od toga da li se targeti u SQLite bazi čuvaju u posebnoj tabeli ili drugim internim oblikom.
+EF Core čuva targete u posebnoj SQLite tabeli. API ugovor ostaje nezavisan od načina čuvanja.
 
 ## Versioning
 

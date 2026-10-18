@@ -55,7 +55,7 @@ export default class Experience{
     destroy(){
         this.sizes.off('resize');
         this.time.off('tick');
-        this.world.twoPhasesGenerator?.hotspotController?.dispose();
+        this.world.activeExhibit?.dispose();
 
         this.scene.traverse((child)=>{
             if(child.isMesh){
@@ -75,8 +75,6 @@ export default class Experience{
         this.renderer.instance.dispose();
         this.cssRenderer.instance.domElement.remove();
 
-        if(this.debug.active){
-            this.debug.ui.destroy();
-        }
+        this.debug.destroy();
     }
 }

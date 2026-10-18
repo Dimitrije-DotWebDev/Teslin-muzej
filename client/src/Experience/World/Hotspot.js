@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 
 export class Hotspot {
-    constructor({ target, targets = [target], position, title, description, container, onClose, onEnter, onLeave }) {
+    constructor({ id, target, targets = [target], localPosition, title, description, container, onClose, onEnter, onLeave }) {
+        this.id = id;
         this.target = target;
         this.targets = [...new Set(targets)];
-        this.anchor = target.worldToLocal(position.clone());
+        this.anchor = localPosition.clone();
         this.projected = new THREE.Vector3();
         this.enabled = true;
         this.progress = { line: 0, panel: 0, glow: 0 };

@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeslaMuseum.Domain", "TeslaMuseum.Domain\TeslaMuseum.Domain.csproj", "{A03B7E9D-B4DB-478E-9F8F-AC777D35D423}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeslaMuseum.Application", "TeslaMuseum.Application\TeslaMuseum.Application.csproj", "{78337DD6-2726-406A-AFAD-EEF436AAFFCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeslaMuseum.Infrastructure", "TeslaMuseum.Infrastructure\TeslaMuseum.Infrastructure.csproj", "{9A174C8C-6BF0-4F41-B156-6A2045946400}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeslaMuseum.Api", "TeslaMuseum.Api\TeslaMuseum.Api.csproj", "{EB7BFAAB-CB86-4CB3-BDCF-6678979498DC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A03B7E9D-B4DB-478E-9F8F-AC777D35D423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A03B7E9D-B4DB-478E-9F8F-AC777D35D423}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A03B7E9D-B4DB-478E-9F8F-AC777D35D423}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A03B7E9D-B4DB-478E-9F8F-AC777D35D423}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78337DD6-2726-406A-AFAD-EEF436AAFFCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78337DD6-2726-406A-AFAD-EEF436AAFFCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78337DD6-2726-406A-AFAD-EEF436AAFFCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78337DD6-2726-406A-AFAD-EEF436AAFFCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A174C8C-6BF0-4F41-B156-6A2045946400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A174C8C-6BF0-4F41-B156-6A2045946400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A174C8C-6BF0-4F41-B156-6A2045946400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A174C8C-6BF0-4F41-B156-6A2045946400}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB7BFAAB-CB86-4CB3-BDCF-6678979498DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB7BFAAB-CB86-4CB3-BDCF-6678979498DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB7BFAAB-CB86-4CB3-BDCF-6678979498DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB7BFAAB-CB86-4CB3-BDCF-6678979498DC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

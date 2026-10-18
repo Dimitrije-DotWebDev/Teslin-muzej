@@ -4,10 +4,8 @@ import Experience from "../Experience.js";
 export default class ArtisticMagneticField{
     constructor(generator){
         this.Experience = new Experience();
-        this.scene = this.Experience.scene;
         this.generator = generator;
-        this.magneticFieldObject = this.generator.magneticFieldObject;
-        this.magneticFieldRotationObject = this.generator.magneticFieldRotationObject;
+        this.fieldContext = this.generator.fieldContext;
         this.time = this.Experience.time;
         this.setMesh();
         this.setOuterShell();
@@ -214,47 +212,31 @@ export default class ArtisticMagneticField{
             this.outerMaterial
         );
 
-        this.outerMesh.position.copy(
-            this.mesh.position
-        );
-
         this.outerMesh.rotation.copy(
             this.mesh.rotation
         );
 
-        this.scene.add(this.outerMesh);
+        this.fieldContext.root.add(this.outerMesh);
     }
     setMesh(){
         this.setGeometry();
         this.setMaterial();
         this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-        this.mesh.position.copy(
-            this.magneticFieldObject.getWorldPosition(new THREE.Vector3())
-        );
         this.mesh.rotation.x = Math.PI / 2; // Postavi rotaciju da bude horizontalna
-        this.scene.add(this.mesh);
-    }
-    normalizeAngleDelta(current, previous) {
-        let delta = current - previous;
-
-        const TWO_PI = Math.PI * 2;
-
-        delta = (delta + Math.PI) % TWO_PI - Math.PI;
-
-        return delta;
+        this.fieldContext.root.add(this.mesh);
     }
     destroy() {
 
         // remove meshes
         if (this.mesh) {
-            this.scene.remove(this.mesh);
+            this.mesh.removeFromParent();
             this.geometry.dispose();
             this.material.dispose();
         }
 
         if (this.outerMesh) {
-            this.scene.remove(this.outerMesh);
+            this.outerMesh.removeFromParent();
             this.outerGeometry.dispose();
             this.outerMaterial.dispose();
         }
@@ -269,35 +251,19 @@ export default class ArtisticMagneticField{
 
         const leadAngle = THREE.MathUtils.degToRad(8.0) + Math.sin(this.time.elapsed * 0.001 * 2.0) * 0.03;
 
-        const currentAngle = this.magneticFieldRotationObject.rotation.z + Math.PI / 3;
-
-        if (this.previousAngle === undefined) {
-            this.previousAngle = currentAngle;
-        }
-
-        if (this.smoothAngle === undefined) {
-            this.smoothAngle = currentAngle;
-        }
-
-        const delta = this.normalizeAngleDelta(
-            currentAngle,
-            this.previousAngle
-        );
-
-        this.previousAngle = currentAngle;
-
-        this.smoothAngle += delta;
-
         this.material.uniforms.uTime.value =
             this.time.elapsed * 0.001;
 
         this.material.uniforms.uRotorAngle.value =
-            this.smoothAngle + leadAngle;
+            this.fieldContext.angle + Math.PI / 3 + leadAngle;
+
+        this.material.uniforms.uAngularVelocity.value =
+            THREE.MathUtils.clamp(this.fieldContext.angularVelocity, -10, 10);
 
         this.outerMaterial.uniforms.uTime.value =
             this.time.elapsed * 0.001;
 
         this.outerMaterial.uniforms.uRotorAngle.value =
-            this.smoothAngle + leadAngle;
+            this.fieldContext.angle + Math.PI / 3 + leadAngle;
     }
 }

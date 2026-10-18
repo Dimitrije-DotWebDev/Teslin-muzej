@@ -4,16 +4,15 @@ import Experience from "../Experience.js";
 export default class EngineeringMagneticField{
     constructor(generator){
         this.Experience = new Experience();
-        this.scene = this.Experience.scene;
-
         this.generator = generator;
-        this.magneticFieldObject = this.generator.magneticFieldObject;
-        this.magneticFieldRotationObject = this.generator.magneticFieldRotationObject;
+        this.fieldContext = this.generator.fieldContext;
+        this.config = this.generator.config.field.engineering;
 
         this.virtualMagnet = null;
 
         this.coils = [];
-        this.coilCount = 8;
+        this.coilCount = this.config.coilCount;
+        this.phaseCount = this.config.phaseCount;
         this.coilRadius = 1.6;
         this.rotorAngle = 0;
         this.rotorVelocity = 0;
@@ -39,6 +38,7 @@ export default class EngineeringMagneticField{
         );
 
         this.torqueArrow = geometry;
+        this.torqueArrow.visible = this.config.showTorqueVector;
         this.engineeringRoot.add(this.torqueArrow);
     }
     getRotatingFieldVector() {
@@ -50,11 +50,11 @@ export default class EngineeringMagneticField{
     }
     getGeneratorAngle() {
 
-        return this.magneticFieldRotationObject.rotation.z;
+        return this.fieldContext.angle;
     }
     setEngineeringRoot(){
         this.engineeringRoot = new THREE.Group();
-        this.scene.add(this.engineeringRoot);
+        this.fieldContext.root.add(this.engineeringRoot);
     }
     createCoils() {
 
@@ -112,11 +112,8 @@ export default class EngineeringMagneticField{
         group.add(north);
         group.add(south);
 
-        group.position.copy(
-            this.magneticFieldObject.getWorldPosition(new THREE.Vector3())
-        );
-
         group.rotation.x = Math.PI / 2;
+        group.visible = this.config.showVirtualMagnet;
 
         this.virtualMagnet = group;
 
@@ -140,9 +137,12 @@ export default class EngineeringMagneticField{
 
         this.coils.forEach((coil, i) => {
 
-            // A B A B ...
-            coilPhases.push(i % 2);
+            coilPhases.push(i % this.phaseCount);
         });
+        while (coilPositions.length < 32) {
+            coilPositions.push(new THREE.Vector2());
+            coilPhases.push(0);
+        }
        this.fieldUniforms = {
 
             uTime: { value: 0 },
@@ -161,6 +161,8 @@ export default class EngineeringMagneticField{
             uPhaseType: {
                 value: coilPhases
             },
+            uCoilCount: { value: this.coilCount },
+            uPhaseCount: { value: this.phaseCount },
             uCoilRadius: { value: this.coilRadius }
         };
 
@@ -193,8 +195,10 @@ export default class EngineeringMagneticField{
                 uniform float uTime;
                 uniform vec3 uColorA;
                 uniform vec3 uColorB;
-                uniform vec2 uCoils[8];
-                uniform int uPhaseType[8];
+                uniform vec2 uCoils[32];
+                uniform int uPhaseType[32];
+                uniform int uCoilCount;
+                uniform int uPhaseCount;
                 uniform float uCoilRadius;
                 varying vec2 vUv;
 
@@ -210,11 +214,13 @@ export default class EngineeringMagneticField{
 
                     // mnogo vidljivije trake
                     vec2 rotatingField = vec2(
-                        cos(uTime * 2.0),
-                        sin(uTime * 2.0)
+                        cos(uTime),
+                        sin(uTime)
                     );
                     vec3 sectorAccum = vec3(0.0);
-                    for(int i = 0; i < 8; i++) {
+                    for(int i = 0; i < 32; i++) {
+
+                        if(i >= uCoilCount) break;
 
                         vec2 coil = uCoils[i] / 6.0;
 
@@ -224,17 +230,11 @@ export default class EngineeringMagneticField{
 
                         vec2 dir = normalize(toPixel);
 
-                        // 2-phase system
-                        float phaseCurrent = 0.0;
-
-                        if(uPhaseType[i] == 0) {
-
-                            phaseCurrent = sin(uTime * 2.0);
-
-                        } else {
-
-                            phaseCurrent = cos(uTime * 2.0);
-                        }
+                        float phaseStep = uPhaseCount == 2
+                            ? 1.57079632679
+                            : 6.28318530718 / float(uPhaseCount);
+                        float phaseOffset = float(uPhaseType[i]) * phaseStep;
+                        float phaseCurrent = sin(uTime + phaseOffset);
 
                         // directional magnetic projection
                         float directionalStrength =
@@ -302,12 +302,6 @@ export default class EngineeringMagneticField{
         this.fieldShader = new THREE.Mesh(geometry, material);
 
         // centriranje
-        this.fieldShader.position.copy(
-            this.magneticFieldObject.getWorldPosition(
-                new THREE.Vector3()
-            )
-        );
-
         // 🔥 rotor ti je u XY ravni
         this.fieldShader.rotation.x = 0;
 
@@ -376,7 +370,7 @@ export default class EngineeringMagneticField{
             this.virtualMagnet.position
         );
 
-        const fieldSpeed = this.fieldAngle; // stator speed
+        const fieldSpeed = this.fieldContext.angularDelta;
         const rotorSpeed = this.rotorVelocity;
 
         // relative motion (ključ)
@@ -408,6 +402,8 @@ export default class EngineeringMagneticField{
         if (this.virtualMagnet) {
             this.engineeringRoot.remove(this.virtualMagnet);
         }
+
+        this.engineeringRoot.removeFromParent();
 
         this.coils = [];
         this.fieldUniforms = null;

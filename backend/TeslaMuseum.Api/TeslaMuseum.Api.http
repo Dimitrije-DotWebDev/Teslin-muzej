@@ -1,0 +1,9 @@
+@TeslaMuseum.Api_HostAddress = http://localhost:5095
+
+GET {{TeslaMuseum.Api_HostAddress}}/api/exhibits
+Accept: application/json
+
+###
+
+GET {{TeslaMuseum.Api_HostAddress}}/api/exhibits/two-phase-motor
+Accept: application/json
