@@ -1,5 +1,6 @@
 import AdminModelEditor from './AdminModelEditor.js';
 import AdminFieldEditor from './AdminFieldEditor.js';
+import ModelPartRegistry from '../Utils/ModelPartRegistry.js';
 
 export default class AdminPanel {
     constructor(api, validateModel, onCatalogChanged) {
@@ -15,6 +16,8 @@ export default class AdminPanel {
         this.thumbnailPreview = this.form.querySelector('.admin-thumbnail-preview');
         this.thumbnailImage = this.thumbnailPreview.querySelector('img');
         this.thumbnailFileInput = this.form.elements.thumbnailFile;
+        this.modelFileInput = this.form.elements.modelFile;
+        this.modelFileName = this.form.querySelector('.admin-model-file-name');
         this.fieldValues = this.form.querySelector('.admin-field-values');
         this.fieldEditor = new AdminFieldEditor(
             this.form.querySelector('.admin-field-model-editor'),
@@ -41,15 +44,18 @@ export default class AdminPanel {
     }
 
     bindEvents() {
-        window.addEventListener('hashchange', () => this.syncRoute());
+        window.addEventListener('popstate', () => this.syncRoute());
         this.screen.querySelector('.admin-close').addEventListener('click', () => this.navigateToCatalog());
         this.screen.querySelector('.admin-new').addEventListener('click', () => this.openForm());
         this.screen.querySelector('.admin-cancel').addEventListener('click', () => this.closeForm());
         this.screen.querySelector('.admin-validate-model').addEventListener('click', () => this.validateModelPath());
+        this.modelFileInput.addEventListener('change', () => this.selectModel());
+        this.screen.querySelector('.admin-model-remove').addEventListener('click', () => this.removeModel());
         this.thumbnailFileInput.addEventListener('change', () => this.selectThumbnail());
         this.screen.querySelector('.admin-thumbnail-remove').addEventListener('click', () => this.removeThumbnail());
         this.form.addEventListener('submit', (event) => this.save(event));
         this.form.elements.fieldEnabled.addEventListener('change', () => this.setFieldEnabled());
+        this.form.elements.behaviorType.addEventListener('change', () => this.setBehaviorDefaults());
         [
             'fieldProfile', 'fieldReferencePartId', 'fieldRotationPartId', 'fieldRotationAxis',
             'fieldAngleMultiplier', 'fieldPhaseOffsetDegrees', 'fieldPositionX', 'fieldPositionY',
@@ -69,7 +75,7 @@ export default class AdminPanel {
     }
 
     isAdminRoute() {
-        return window.location.hash.toLowerCase() === '#admin';
+        return window.location.pathname.replace(/\/+$/, '').toLowerCase() === '/admin';
     }
 
     syncRoute() {
@@ -90,8 +96,7 @@ export default class AdminPanel {
     }
 
     navigateToCatalog() {
-        history.replaceState(null, '', window.location.pathname + window.location.search);
-        this.syncRoute();
+        window.location.assign('/' + window.location.search);
     }
 
     hide() {
@@ -174,6 +179,7 @@ export default class AdminPanel {
         }
 
         this.setThumbnailPreview(exhibit?.thumbnailPath ?? null);
+        this.setModelPath(exhibit?.modelPath ?? null);
 
         this.setFieldForm(exhibit?.field ?? null);
 
@@ -201,20 +207,21 @@ export default class AdminPanel {
         this.closeHotspotForm();
         this.fieldEditor.close();
         this.clearThumbnailObjectUrl();
+        this.modelFileName.textContent = '';
     }
 
     getFormData() {
-        const data = new FormData(this.form);
+        const form = this.form.elements;
         return {
-            slug: data.get('slug').trim(),
-            title: data.get('title').trim(),
-            eyebrow: data.get('eyebrow').trim(),
-            description: data.get('description').trim(),
-            behaviorType: data.get('behaviorType').trim(),
-            modelPath: data.get('modelPath').trim() || null,
-            thumbnailPath: data.get('thumbnailPath').trim() || null,
+            slug: form.slug.value.trim(),
+            title: form.title.value.trim(),
+            eyebrow: form.eyebrow.value.trim(),
+            description: form.description.value.trim(),
+            behaviorType: form.behaviorType.value.trim(),
+            modelPath: form.modelPath.value.trim() || null,
+            thumbnailPath: form.thumbnailPath.value.trim() || null,
             field: this.getFieldFormData(),
-            displayOrder: Number(data.get('displayOrder'))
+            displayOrder: Number(form.displayOrder.value)
         };
     }
 
@@ -322,6 +329,16 @@ export default class AdminPanel {
 
         this.setBusy(true);
         try {
+            const selectedModel = this.modelFileInput.files[0];
+            if (selectedModel) {
+                await this.uploadSelectedModel();
+                const resource = await this.validateModel(this.form.elements.modelPath.value);
+                this.validateModelConfiguration(
+                    resource,
+                    this.getFieldFormData(),
+                    this.form.elements.behaviorType.value
+                );
+            }
             const thumbnailFile = this.thumbnailFileInput.files[0];
             if (thumbnailFile) {
                 this.setStatus('Отпремање thumbnail слике…');
@@ -343,6 +360,51 @@ export default class AdminPanel {
         } finally {
             this.setBusy(false);
         }
+    }
+
+    selectModel() {
+        const file = this.modelFileInput.files[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.glb') || file.size > 100 * 1024 * 1024) {
+            this.modelFileInput.value = '';
+            this.setStatus('Модел мора бити GLB 2.0 фајл до 100 MB.', true);
+            return;
+        }
+
+        this.modelFileName.textContent = `Изабран фајл: ${file.name}`;
+        this.setStatus('Модел је изабран. Кликните „Отпреми и провери“.');
+    }
+
+    removeModel() {
+        this.modelFileInput.value = '';
+        this.form.elements.modelPath.value = '';
+        this.modelFileName.textContent = 'Модел није изабран.';
+    }
+
+    setModelPath(path) {
+        this.modelFileInput.value = '';
+        this.form.elements.modelPath.value = path || '';
+        this.modelFileName.textContent = path
+            ? `Сачуван модел: ${path.split('/').pop()}`
+            : 'Модел није изабран.';
+    }
+
+    async uploadSelectedModel() {
+        const file = this.modelFileInput.files[0];
+        if (!file) return this.form.elements.modelPath.value.trim();
+
+        this.setStatus('Отпремање GLB модела…');
+        const upload = await this.api.uploadModel(file);
+        this.setModelPath(upload.modelPath);
+        return upload.modelPath;
+    }
+
+    setBehaviorDefaults() {
+        const behaviorType = this.form.elements.behaviorType.value;
+        if (behaviorType === 'three-phase-motor') this.form.elements.fieldPhaseCount.value = 3;
+        if (behaviorType === 'two-phase-motor') this.form.elements.fieldPhaseCount.value = 2;
+        this.syncFieldEditor();
     }
 
     selectThumbnail() {
@@ -386,6 +448,13 @@ export default class AdminPanel {
     async toggleAvailability(exhibit) {
         this.setStatus(exhibit.isAvailable ? 'Повлачење из каталога…' : 'Објављивање…');
         try {
+            if (!exhibit.isAvailable) {
+                if (!exhibit.modelPath || !exhibit.field) {
+                    throw new Error('За објављивање су потребни GLB модел и подешавање поља.');
+                }
+                const resource = await this.validateModel(exhibit.modelPath);
+                this.validateModelConfiguration(resource, exhibit.field, exhibit.behaviorType);
+            }
             await this.api.setExhibitAvailability(exhibit.id, !exhibit.isAvailable);
             await this.afterChange(exhibit.isAvailable ? 'Експонат је повучен из каталога.' : 'Експонат је објављен.');
         } catch (error) {
@@ -592,23 +661,58 @@ export default class AdminPanel {
     }
 
     async validateModelPath() {
-        const path = this.form.elements.modelPath.value.trim();
-        if (!path) {
-            this.setStatus('Унесите путању до GLB модела.', true);
-            return;
-        }
-
-        this.setStatus('Провера модела…');
         try {
-            await this.validateModel(path);
+            const path = await this.uploadSelectedModel();
+            if (!path) {
+                this.setStatus('Изаберите GLB модел.', true);
+                return;
+            }
+
+            this.setStatus('Провера модела…');
+            const resource = await this.validateModel(path);
+            const field = this.getFieldFormData();
+            const partCount = this.validateModelConfiguration(
+                resource,
+                field,
+                this.form.elements.behaviorType.value
+            );
             if (this.form.elements.fieldEnabled.checked) {
                 this.fieldEditor.configuration = this.getFieldFormData();
                 await this.fieldEditor.load();
             }
-            this.setStatus('Модел је успешно учитан и GLB је исправан.');
+            this.setStatus(`GLB је исправан. Пронађено museumPartId вредности: ${partCount}.`);
         } catch (error) {
-            this.setStatus('Модел није могуће учитати са унете путање.', true);
+            this.setStatus(error.message || 'Модел није могуће учитати.', true);
         }
+    }
+
+    validateModelConfiguration(resource, field, behaviorType) {
+        const registry = new ModelPartRegistry(resource.scene);
+        const isRotatingMotor = behaviorType === 'two-phase-motor' || behaviorType === 'three-phase-motor';
+
+        if (isRotatingMotor && resource.animations.length === 0) {
+            throw new Error('Модел мотора мора да садржи бар једну анимацију.');
+        }
+
+        if (isRotatingMotor && field) {
+            const requiredPhaseCount = behaviorType === 'three-phase-motor' ? 3 : 2;
+            if (field.profile !== 'rotating-motor') {
+                throw new Error('Мотор мора да користи профил „Обртно поље мотора“.');
+            }
+            if (field.engineering.phaseCount !== requiredPhaseCount) {
+                throw new Error(`Изабрани мотор мора да има број фаза ${requiredPhaseCount}.`);
+            }
+        }
+
+        if (field) {
+            if (registry.parts.size === 0) {
+                throw new Error('GLB нема ниједан museumPartId. Додајте их у Blender-у пре подешавања поља и hotspot-ова.');
+            }
+            registry.getRequired(field.referencePartId);
+            registry.getRequired(field.rotationPartId);
+        }
+
+        return registry.parts.size;
     }
 
     async afterChange(message) {

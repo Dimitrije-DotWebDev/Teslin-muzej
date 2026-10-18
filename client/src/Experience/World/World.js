@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Experience from "../Experience.js";
 import Environment from './Environment.js';
 import Exhibit from './Exhibit.js';
-import TwoPhaseMotorBehavior from './behaviors/TwoPhaseMotorBehavior.js';
+import RotatingMotorBehavior from './behaviors/RotatingMotorBehavior.js';
 import Floor from './Floor.js';
 import gsap from 'gsap';
 import rollingSound from '../../../static/audio/rollingSound/rolling.wav';
@@ -22,7 +22,10 @@ export default class World{
         this.exhibitApi = new ExhibitApi(apiUrl);
         this.exhibitTypes = {
             'two-phase-motor': {
-                Behavior: TwoPhaseMotorBehavior
+                Behavior: RotatingMotorBehavior
+            },
+            'three-phase-motor': {
+                Behavior: RotatingMotorBehavior
             }
         };
         this.resources.on('ready', async ()=>{
@@ -30,7 +33,7 @@ export default class World{
             this.floor = new Floor();
             this.adminPanel = new AdminPanel(
                 this.exhibitApi,
-                (path) => this.resources.loadModel(path),
+                (path) => this.resources.loadModel(this.exhibitApi.resolveAssetUrl(path)),
                 () => this.refreshCatalog()
             );
             await this.initializeCatalog();
@@ -100,7 +103,7 @@ export default class World{
             }
 
             const resource = await this.resources.loadModel(
-                details.modelPath,
+                this.exhibitApi.resolveAssetUrl(details.modelPath),
                 (progress) => this.loadingScreen.setProgress(progress * 0.85)
             );
 

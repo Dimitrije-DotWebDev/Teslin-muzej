@@ -647,7 +647,8 @@ html,body{
     gap: 8px;
 }
 
-.admin-thumbnail-field {
+.admin-thumbnail-field,
+.admin-model-file-field {
     display: grid;
     gap: 9px;
 }
@@ -665,13 +666,15 @@ html,body{
     gap: 8px;
 }
 
-.admin-thumbnail-upload {
+.admin-thumbnail-upload,
+.admin-model-upload {
     display: inline-flex !important;
     width: auto;
     cursor: pointer;
 }
 
-.admin-thumbnail-upload input {
+.admin-thumbnail-upload input,
+.admin-model-upload input {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -698,6 +701,13 @@ html,body{
 .admin-thumbnail-hint {
     margin: 0;
     font-weight: 400;
+}
+
+.admin-model-file-name {
+    min-height: 18px;
+    margin: 0;
+    color: #d7f6ff;
+    font-size: 13px;
 }
 
 .admin-form-actions {

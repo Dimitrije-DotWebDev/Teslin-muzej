@@ -29,6 +29,12 @@ export default class ExhibitApi {
         return this.request('/admin/exhibits/thumbnail', { method: 'POST', formData });
     }
 
+    uploadModel(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.request('/admin/exhibits/model', { method: 'POST', formData });
+    }
+
     resolveAssetUrl(path) {
         if (!path?.startsWith('/uploads/')) return path;
         return new URL(path, new URL(this.baseUrl, window.location.origin).origin).href;

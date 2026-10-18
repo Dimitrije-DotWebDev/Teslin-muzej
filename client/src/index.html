@@ -40,11 +40,31 @@
                         <label>Slug<input name="slug" maxlength="100" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
                         <label class="admin-field-wide">Наднаслов<input name="eyebrow" maxlength="200" required></label>
                         <label class="admin-field-wide">Опис<textarea name="description" maxlength="4000" rows="5" required></textarea></label>
-                        <label>Тип понашања<input name="behaviorType" maxlength="100" required></label>
-                        <label>Редослед<input name="displayOrder" type="number" min="0" value="0" required></label>
-                        <label class="admin-field-wide">Путања до GLB модела
-                            <span class="admin-input-action"><input name="modelPath" maxlength="1000"><button type="button" class="admin-validate-model admin-secondary">Провери</button></span>
+                        <label>Тип понашања
+                            <select name="behaviorType" required>
+                                <option value="two-phase-motor">Двофазни мотор</option>
+                                <option value="three-phase-motor">Трофазни мотор</option>
+                                <option value="magnetic-motor">Магнетни мотор</option>
+                                <option value="electromagnetic-motor">Електромагнетни мотор</option>
+                                <option value="symmetric-motor">Симетрични мотор</option>
+                                <option value="transformer">Трансформатор</option>
+                            </select>
                         </label>
+                        <label>Редослед<input name="displayOrder" type="number" min="0" value="0" required></label>
+                        <div class="admin-field-wide admin-model-file-field">
+                            <span class="admin-thumbnail-label">GLB модел</span>
+                            <input name="modelPath" type="hidden">
+                            <div class="admin-thumbnail-controls">
+                                <label class="admin-model-upload admin-secondary">
+                                    Изабери GLB
+                                    <input name="modelFile" type="file" accept=".glb,model/gltf-binary">
+                                </label>
+                                <button type="button" class="admin-validate-model admin-secondary">Отпреми и провери</button>
+                                <button type="button" class="admin-model-remove admin-secondary">Уклони</button>
+                            </div>
+                            <p class="admin-model-file-name"></p>
+                            <p class="admin-thumbnail-hint">GLB 2.0, највише 100 MB.</p>
+                        </div>
                         <div class="admin-field-wide admin-thumbnail-field">
                             <span class="admin-thumbnail-label">Thumbnail</span>
                             <input name="thumbnailPath" type="hidden">
@@ -67,7 +87,7 @@
                                 <p class="catalog-kicker">Визуелизација</p>
                                 <h2>Магнетно поље</h2>
                             </div>
-                            <label class="admin-checkbox"><input name="fieldEnabled" type="checkbox" checked>Поље је подешено</label>
+                            <label class="admin-checkbox"><input name="fieldEnabled" type="checkbox" checked>Подешавање поља</label>
                         </header>
                         <div class="admin-field-model-editor">
                             <div class="admin-model-toolbar">

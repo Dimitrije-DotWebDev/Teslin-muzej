@@ -47,12 +47,7 @@ public sealed class Exhibit
             throw new InvalidOperationException(
                 "A published exhibit needs a model path and magnetic field configuration.");
         }
-        if (IsAvailable && behaviorType.Trim() == "two-phase-motor" &&
-            field?.Profile != "rotating-motor")
-        {
-            throw new InvalidOperationException(
-                "The two-phase motor requires the rotating-motor field profile.");
-        }
+        if (IsAvailable) ValidatePublishedBehavior(behaviorType, field);
 
         Slug = Require(slug);
         Title = Require(title);
@@ -72,11 +67,7 @@ public sealed class Exhibit
             throw new InvalidOperationException(
                 "An exhibit needs a model path and magnetic field configuration before it can be published.");
         }
-        if (isAvailable && BehaviorType == "two-phase-motor" && Field?.Profile != "rotating-motor")
-        {
-            throw new InvalidOperationException(
-                "The two-phase motor requires the rotating-motor field profile.");
-        }
+        if (isAvailable) ValidatePublishedBehavior(BehaviorType, Field);
 
         IsAvailable = isAvailable;
     }
@@ -89,4 +80,29 @@ public sealed class Exhibit
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool IsRotatingMotor(string behaviorType) =>
+        behaviorType.Trim() is "two-phase-motor" or "three-phase-motor";
+
+    private static void ValidatePublishedBehavior(string behaviorType, FieldConfiguration? field)
+    {
+        var normalizedBehavior = behaviorType.Trim();
+        if (!IsRotatingMotor(normalizedBehavior))
+        {
+            throw new InvalidOperationException(
+                $"Behavior type '{normalizedBehavior}' is not implemented yet.");
+        }
+        if (field?.Profile != "rotating-motor")
+        {
+            throw new InvalidOperationException(
+                "A rotating motor requires the rotating-motor field profile.");
+        }
+
+        var requiredPhaseCount = normalizedBehavior == "three-phase-motor" ? 3 : 2;
+        if (field.PhaseCount != requiredPhaseCount)
+        {
+            throw new InvalidOperationException(
+                $"The selected motor requires phaseCount = {requiredPhaseCount}.");
+        }
+    }
 }

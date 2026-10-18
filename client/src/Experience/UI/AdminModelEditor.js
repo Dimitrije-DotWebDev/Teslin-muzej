@@ -116,10 +116,7 @@ export default class AdminModelEditor {
         } catch (error) {
             if (this.requestId !== requestId) return;
             this.clearModel();
-            const message = error.message?.startsWith('Duplicate museumPartId:')
-                ? error.message
-                : 'Модел није могуће учитати са унете путање.';
-            this.setStatus(message, true);
+            this.setStatus(error.message || 'Модел није могуће учитати.', true);
             this.hint.hidden = false;
         }
     }
@@ -151,6 +148,10 @@ export default class AdminModelEditor {
                 this.rememberMaterial(object.material);
             }
         });
+
+        if (this.parts.size === 0) {
+            throw new Error('GLB нема ниједан museumPartId. Додајте их у Blender-у пре подешавања hotspot-ова.');
+        }
 
         this.scene.add(model);
         model.updateWorldMatrix(true, true);

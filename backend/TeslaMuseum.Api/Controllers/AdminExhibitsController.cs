@@ -7,9 +7,13 @@ namespace TeslaMuseum.Api.Controllers;
 
 [ApiController]
 [Route("api/admin/exhibits")]
-public sealed class AdminExhibitsController(ISender sender, IThumbnailStorage thumbnailStorage) : ControllerBase
+public sealed class AdminExhibitsController(ISender sender, IThumbnailStorage thumbnailStorage,
+    IModelStorage modelStorage) : ControllerBase
 {
     private const long MaximumThumbnailSize = 5 * 1024 * 1024;
+    private const long MaximumThumbnailRequestSize = MaximumThumbnailSize + 64 * 1024;
+    private const long MaximumModelSize = 100 * 1024 * 1024;
+    private const long MaximumModelRequestSize = MaximumModelSize + 1024 * 1024;
 
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<AdminExhibitDto>>(StatusCodes.Status200OK)]
@@ -57,7 +61,7 @@ public sealed class AdminExhibitsController(ISender sender, IThumbnailStorage th
 
     [HttpPost("thumbnail")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(MaximumThumbnailSize)]
+    [RequestSizeLimit(MaximumThumbnailRequestSize)]
     [ProducesResponseType<ThumbnailUploadResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ThumbnailUploadResponse>> UploadThumbnail(
@@ -78,6 +82,33 @@ public sealed class AdminExhibitsController(ISender sender, IThumbnailStorage th
         stream.Position = 0;
         var thumbnailPath = await thumbnailStorage.SaveAsync(stream, extension, cancellationToken);
         return Created(thumbnailPath, new ThumbnailUploadResponse(thumbnailPath));
+    }
+
+    [HttpPost("model")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaximumModelRequestSize)]
+    [ProducesResponseType<ModelUploadResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ModelUploadResponse>> UploadModel(
+        [FromForm] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0 || file.Length > MaximumModelSize)
+        {
+            return BadRequest(new ProblemDetails { Detail = "The GLB model must be between 1 byte and 100 MB." });
+        }
+
+        await using var stream = file.OpenReadStream();
+        var header = new byte[12];
+        var bytesRead = await stream.ReadAsync(header, cancellationToken);
+        if (bytesRead < 12 || !header.AsSpan(0, 4).SequenceEqual("glTF"u8) ||
+            BitConverter.ToUInt32(header, 4) != 2)
+        {
+            return BadRequest(new ProblemDetails { Detail = "The selected file is not a valid GLB 2.0 model." });
+        }
+
+        stream.Position = 0;
+        var modelPath = await modelStorage.SaveAsync(stream, cancellationToken);
+        return Created(modelPath, new ModelUploadResponse(modelPath));
     }
 
     [HttpDelete("{id:guid}")]
@@ -141,3 +172,4 @@ public sealed class AdminExhibitsController(ISender sender, IThumbnailStorage th
 }
 
 public sealed record ThumbnailUploadResponse(string ThumbnailPath);
+public sealed record ModelUploadResponse(string ModelPath);

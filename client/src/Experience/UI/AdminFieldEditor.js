@@ -117,9 +117,7 @@ export default class AdminFieldEditor {
             this.setStatus(`Модел је учитан. Пронађено делова: ${this.parts.size}.`);
         } catch (error) {
             this.clearModel();
-            this.setStatus(error.message?.startsWith('Duplicate museumPartId:')
-                ? error.message
-                : 'Модел није могуће учитати са унете путање.', true);
+            this.setStatus(error.message || 'Модел није могуће учитати.', true);
             this.hint.hidden = false;
         }
     }
@@ -145,6 +143,10 @@ export default class AdminFieldEditor {
                 object.material = object.material.clone();
             }
         });
+
+        if (this.parts.size === 0) {
+            throw new Error('GLB нема ниједан museumPartId. Додајте их у Blender-у пре подешавања поља.');
+        }
 
         this.scene.add(model);
         model.updateWorldMatrix(true, true);

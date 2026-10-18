@@ -307,6 +307,8 @@ $RECYCLE.BIN/
 *.ldf
 *.sqlite
 *.db
+*.db-shm
+*.db-wal
 backend/.dotnet-home/
 backend/.nuget-packages/
 backend/.tools/

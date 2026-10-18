@@ -18,10 +18,11 @@ module.exports = merge(
             port: portFinderSync.getPort(8080),
             contentBase: './dist',
             watchContentBase: true,
-            open: true,
+            open: process.env.WEBPACK_OPEN !== 'false',
             https: false,
             useLocalIp: true,
             disableHostCheck: true,
+            historyApiFallback: true,
             overlay: true,
             noInfo: true,
             after: function(app, server, compiler)

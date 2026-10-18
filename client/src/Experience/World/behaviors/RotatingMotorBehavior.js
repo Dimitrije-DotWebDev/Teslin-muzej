@@ -4,7 +4,7 @@ import ArtisticMagneticField from '../ArtisticMagneticField.js';
 import EngineeringMagneticField from '../EngineeringMagneticField.js';
 import LoadingScreen from '../../Utils/LoadingScreen.js';
 
-export default class TwoPhaseMotorBehavior {
+export default class RotatingMotorBehavior {
     constructor(exhibit) {
         this.exhibit = exhibit;
         this.loadingScreen = new LoadingScreen();
@@ -13,7 +13,7 @@ export default class TwoPhaseMotorBehavior {
     initialize() {
         const fieldConfig = this.exhibit.config.field;
         if (!fieldConfig || fieldConfig.profile !== 'rotating-motor') {
-            throw new Error('The two-phase motor requires the rotating-motor field profile.');
+            throw new Error('A rotating motor requires the rotating-motor field profile.');
         }
         this.exhibit.activeFieldSystem = new ArtisticMagneticField(this.exhibit);
 
@@ -33,25 +33,29 @@ export default class TwoPhaseMotorBehavior {
                 ease: 'power2.inOut'
             });
         };
-        this.animation.actions = {};
-
         const clips = this.exhibit.resource.animations;
+        this.animation.actions = clips.map((clip) => {
+            const action = this.animation.mixer.clipAction(clip);
+            action.loop = THREE.LoopRepeat;
+            action.timeScale = 0;
+            action.play();
+            return { clip, action };
+        });
 
-        this.animation.actions.generator = this.animation.mixer.clipAction(clips[0]);
-        this.animation.actions.generator.loop = THREE.LoopRepeat;
-        this.animation.actions.generator.timeScale = 0;
-        this.animation.actions.generator.play();
+        const generatorEntry = this.animation.actions.find(({ clip }) =>
+            clip.name.toLowerCase().includes('generator')) ?? this.animation.actions[0];
+        const motorEntry = this.animation.actions.find(({ clip }) =>
+            clip.name.toLowerCase().includes('motor') && clip !== generatorEntry?.clip);
 
-        this.animation.actions.motor = this.animation.mixer.clipAction(clips[1]);
-        this.animation.actions.motor.loop = THREE.LoopRepeat;
-        this.animation.actions.motor.timeScale = 0;
-        this.animation.actions.motor.play();
+        this.animation.generator = generatorEntry?.action ?? null;
+        this.animation.motor = motorEntry?.action ?? null;
 
-        this.animation.setActionTimeScale(this.animation.actions.motor, 1, 5);
-        this.animation.setActionTimeScale(this.animation.actions.generator, 1, 3, 1.5);
-
-        this.animation.generator = this.animation.actions.generator;
-        this.animation.motor = this.animation.actions.motor;
+        this.animation.actions.forEach(({ action }) => {
+            if (action === this.animation.generator || action === this.animation.motor) return;
+            this.animation.setActionTimeScale(action, 1, 3);
+        });
+        this.animation.setActionTimeScale(this.animation.motor, 1, 5);
+        this.animation.setActionTimeScale(this.animation.generator, 1, 3, 1.5);
     }
 
     setControls() {
@@ -80,13 +84,17 @@ export default class TwoPhaseMotorBehavior {
             powerSwitch.classList.toggle('on', this.controlsParams.power);
 
             if (this.controlsParams.power) {
-                this.animation.setActionTimeScale(this.animation.motor, 1, 5);
-                this.animation.setActionTimeScale(this.animation.generator, this.controlsParams.fieldPolarity, 3, 1.5);
+                this.animation.actions.forEach(({ action }) => {
+                    const target = action === this.animation.generator
+                        ? this.controlsParams.fieldPolarity
+                        : 1;
+                    this.animation.setActionTimeScale(action, target, 3, 1.5);
+                });
                 return;
             }
 
-            this.animation.setActionTimeScale(this.animation.actions.motor, 0, 5);
-            this.animation.setActionTimeScale(this.animation.actions.generator, 0, 3, 2);
+            this.animation.actions.forEach(({ action }) =>
+                this.animation.setActionTimeScale(action, 0, 3, 2));
         });
 
         this.controlsFolder
