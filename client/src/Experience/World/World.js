@@ -10,6 +10,7 @@ import ExhibitCatalog from '../UI/ExhibitCatalog.js';
 import LoadingScreen from '../Utils/LoadingScreen.js';
 import ExhibitApi from '../Api/ExhibitApi.js';
 import AdminPanel from '../UI/AdminPanel.js';
+import { baseURL } from '../../config.js';
 
 export default class World{
     constructor(){
@@ -18,7 +19,8 @@ export default class World{
         this.resources = this.experience.resources;
         this.loadingScreen = new LoadingScreen();
         const apiUrl = new URLSearchParams(window.location.search).get('api')
-            || window.TESLA_MUSEUM_API_URL;
+            || window.TESLA_MUSEUM_API_URL
+            || baseURL;
         this.exhibitApi = new ExhibitApi(apiUrl);
         this.exhibitTypes = {
             'two-phase-motor': {

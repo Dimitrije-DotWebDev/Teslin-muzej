@@ -1,5 +1,5 @@
 export default class ExhibitApi {
-    constructor(baseUrl = 'http://localhost:5095/api') {
+    constructor(baseUrl) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
     }
 
