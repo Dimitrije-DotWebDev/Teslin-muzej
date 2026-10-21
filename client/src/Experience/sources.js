@@ -8,5 +8,10 @@ export default [
         name: 'hotspotTexture',
         type: 'texture',
         path: '/textures/ui/hotspot.png'
+    },
+    {
+        name: 'environmentMap',
+        type: 'hdrTexture',
+        path: '/textures/environment/machine_shop_02_1k.hdr'
     }
 ];

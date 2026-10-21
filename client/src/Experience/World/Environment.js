@@ -13,7 +13,13 @@ export default class Environment{
         }
         this.setSunLight();
         this.setAmbientLight();
+        this.setEnvironmentMap();
         this.setBackground();
+    }
+    setEnvironmentMap(){
+        this.environmentMap = this.resources.items.environmentMap;
+        this.scene.environment = this.environmentMap;
+        this.scene.environmentIntensity = 1;
     }
     setSunLight(){
         this.sunLight = new THREE.DirectionalLight('#ffffff', 5);

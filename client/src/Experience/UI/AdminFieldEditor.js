@@ -3,13 +3,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 
 export default class AdminFieldEditor {
-    constructor(root, loadModel, getModelPath, onReferenceChange, onRotationChange, onTransformChange) {
+    constructor(root, loadModel, getModelPath, onReferenceChange, onRotationChange, onTransformChange, environmentMap) {
         this.root = root;
         this.loadModel = loadModel;
         this.getModelPath = getModelPath;
         this.onReferenceChange = onReferenceChange;
         this.onRotationChange = onRotationChange;
         this.onTransformChange = onTransformChange;
+        this.environmentMap = environmentMap;
         this.canvas = root.querySelector('.admin-field-canvas');
         this.viewport = root.querySelector('.admin-field-viewport');
         this.hint = root.querySelector('.admin-field-hint');
@@ -27,6 +28,8 @@ export default class AdminFieldEditor {
     setScene() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x050b12);
+        this.scene.environment = this.environmentMap;
+        this.scene.environmentIntensity = 1;
         this.camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;

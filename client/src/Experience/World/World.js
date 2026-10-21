@@ -36,7 +36,8 @@ export default class World{
             this.adminPanel = new AdminPanel(
                 this.exhibitApi,
                 (path) => this.resources.loadModel(this.exhibitApi.resolveAssetUrl(path)),
-                () => this.refreshCatalog()
+                () => this.refreshCatalog(),
+                this.resources.items.environmentMap
             );
             await this.initializeCatalog();
         });

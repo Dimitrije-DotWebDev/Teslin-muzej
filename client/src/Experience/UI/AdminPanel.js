@@ -3,7 +3,7 @@ import AdminFieldEditor from './AdminFieldEditor.js';
 import ModelPartRegistry from '../Utils/ModelPartRegistry.js';
 
 export default class AdminPanel {
-    constructor(api, validateModel, onCatalogChanged) {
+    constructor(api, validateModel, onCatalogChanged, environmentMap) {
         this.api = api;
         this.validateModel = validateModel;
         this.onCatalogChanged = onCatalogChanged;
@@ -25,7 +25,8 @@ export default class AdminPanel {
             () => this.form.elements.modelPath.value.trim(),
             (partId) => this.setFieldPart('fieldReferencePartId', partId),
             (partId) => this.setFieldPart('fieldRotationPartId', partId),
-            (transform) => this.setFieldTransform(transform)
+            (transform) => this.setFieldTransform(transform),
+            environmentMap
         );
         this.hotspotSection = this.screen.querySelector('.admin-hotspots');
         this.hotspotList = this.screen.querySelector('.admin-hotspot-list');
@@ -37,7 +38,8 @@ export default class AdminPanel {
             validateModel,
             () => this.form.elements.modelPath.value.trim(),
             (partId, position) => this.setAnchorFromModel(partId, position),
-            (partIds) => this.setTargetsFromModel(partIds)
+            (partIds) => this.setTargetsFromModel(partIds),
+            environmentMap
         );
         this.bindEvents();
         this.syncRoute();

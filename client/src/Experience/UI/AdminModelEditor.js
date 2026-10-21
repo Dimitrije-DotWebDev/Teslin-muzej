@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export default class AdminModelEditor {
-    constructor(root, loadModel, getModelPath, onAnchorChange, onTargetsChange) {
+    constructor(root, loadModel, getModelPath, onAnchorChange, onTargetsChange, environmentMap) {
         this.root = root;
         this.loadModel = loadModel;
         this.getModelPath = getModelPath;
         this.onAnchorChange = onAnchorChange;
         this.onTargetsChange = onTargetsChange;
+        this.environmentMap = environmentMap;
         this.canvas = root.querySelector('.admin-model-canvas');
         this.viewport = root.querySelector('.admin-model-viewport');
         this.hint = root.querySelector('.admin-model-hint');
@@ -27,6 +28,8 @@ export default class AdminModelEditor {
     setScene() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x050b12);
+        this.scene.environment = this.environmentMap;
+        this.scene.environmentIntensity = 1;
         this.camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
