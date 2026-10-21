@@ -227,7 +227,7 @@ export default class AdminFieldEditor {
             depthTest: false
         });
         const mesh = new THREE.Mesh(geometry, material);
-        if (profile === 'rotating-motor') mesh.rotation.x = Math.PI / 2;
+        if (profile === 'rotating-field') mesh.rotation.x = Math.PI / 2;
         this.proxy.add(mesh);
     }
 

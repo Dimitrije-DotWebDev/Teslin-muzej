@@ -6,6 +6,7 @@ export default class ArtisticMagneticField{
         this.Experience = new Experience();
         this.exhibit = exhibit;
         this.fieldContext = this.exhibit.fieldContext;
+        this.config = this.exhibit.config.field.engineering;
         this.time = this.Experience.time;
         this.setMesh();
         this.setOuterShell();
@@ -35,7 +36,8 @@ export default class ArtisticMagneticField{
             uniforms: {
                 uTime: { value: 0 },
                 uAmplitude: { value: 0.15 },
-                uFrequency: { value: 6.0 },
+                uFrequency: { value: (this.config.phaseCount * 2 + 2) * this.config.polePairs },
+                uPolePairs: { value: this.config.polePairs },
                 uRotorAngle: { value: -Math.PI / 4 },
                 uAngularVelocity: { value: 0 }
             },
@@ -44,6 +46,7 @@ export default class ArtisticMagneticField{
                 uniform float uTime;
                 uniform float uAmplitude;
                 uniform float uFrequency;
+                uniform float uPolePairs;
                 uniform float uRotorAngle;
                 uniform float uAngularVelocity;
 
@@ -58,12 +61,12 @@ export default class ArtisticMagneticField{
                     float y = pos.y * 2.0;
 
                     // 🧲 DIPOL (rotacija + stabilnost)
-                    float heightFactor = cos(theta + uRotorAngle + 0.52);
+                    float heightFactor = cos(theta * uPolePairs + uRotorAngle + 0.52);
                     vHeight = heightFactor * 0.5 + 0.5;
 
                     // 🌊 BASE WAVE
                     float baseWave =
-                        sin(theta * 4.0 + y + uTime * 1.5)
+                        sin(theta * max(uFrequency - 2.0, 1.0) + y + uTime * 1.5)
                         * 0.05;
 
                     float rotorWave =
@@ -135,12 +138,14 @@ export default class ArtisticMagneticField{
 
             uniforms: {
                 uTime: { value: 0 },
+                uPolePairs: { value: this.config.polePairs },
                 uRotorAngle: { value: 0 }
             },
 
             vertexShader: `
 
                 uniform float uTime;
+                uniform float uPolePairs;
                 uniform float uRotorAngle;
 
                 varying float vFresnel;
@@ -171,7 +176,7 @@ export default class ArtisticMagneticField{
                     );
 
                     // 🧲 rotating dipole
-                    float h = cos(theta + uRotorAngle + 0.52);
+                    float h = cos(theta * uPolePairs + uRotorAngle + 0.52);
 
                     vHeight = h * 0.5 + 0.5;
 
@@ -255,15 +260,19 @@ export default class ArtisticMagneticField{
             this.time.elapsed * 0.001;
 
         this.material.uniforms.uRotorAngle.value =
-            this.fieldContext.angle + Math.PI / 3 + leadAngle;
+            this.fieldContext.angle * this.config.polePairs + Math.PI / 3 + leadAngle;
 
         this.material.uniforms.uAngularVelocity.value =
-            THREE.MathUtils.clamp(this.fieldContext.angularVelocity, -10, 10);
+            THREE.MathUtils.clamp(
+                this.fieldContext.angularVelocity * this.config.polePairs,
+                -10,
+                10
+            );
 
         this.outerMaterial.uniforms.uTime.value =
             this.time.elapsed * 0.001;
 
         this.outerMaterial.uniforms.uRotorAngle.value =
-            this.fieldContext.angle + Math.PI / 3 + leadAngle;
+            this.fieldContext.angle * this.config.polePairs + Math.PI / 3 + leadAngle;
     }
 }

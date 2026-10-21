@@ -47,7 +47,7 @@ public sealed class SaveExhibitRequest
 
 public sealed class SaveFieldConfigurationRequest
 {
-    [Required, RegularExpression("^(rotating-motor|static-dipole|alternating-core|linear-field)$")]
+    [Required, RegularExpression("^(rotating-field|static-dipole|alternating-core|linear-field)$")]
     public string Profile { get; init; } = string.Empty;
 
     [Required, MaxLength(200)]

@@ -4,7 +4,7 @@ public sealed class FieldConfiguration
 {
     private static readonly HashSet<string> Profiles =
     [
-        "rotating-motor",
+        "rotating-field",
         "static-dipole",
         "alternating-core",
         "linear-field"

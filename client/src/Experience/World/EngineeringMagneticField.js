@@ -13,6 +13,7 @@ export default class EngineeringMagneticField{
         this.coils = [];
         this.coilCount = this.config.coilCount;
         this.phaseCount = this.config.phaseCount;
+        this.polePairs = this.config.polePairs;
         this.coilRadius = 1.6;
         this.rotorAngle = 0;
         this.rotorVelocity = 0;
@@ -44,8 +45,8 @@ export default class EngineeringMagneticField{
     getRotatingFieldVector() {
 
         return new THREE.Vector2(
-            Math.cos(this.fieldAngle),
-            Math.sin(this.fieldAngle)
+            Math.cos(this.fieldAngle * this.polePairs),
+            Math.sin(this.fieldAngle * this.polePairs)
         );
     }
     getMotorAngle() {
@@ -316,7 +317,7 @@ export default class EngineeringMagneticField{
 
         if (!this.fieldUniforms) return;
 
-        this.fieldUniforms.uTime.value = this.fieldAngle;
+        this.fieldUniforms.uTime.value = this.fieldAngle * this.polePairs;
     }
     updateRotorCoupling() {
 
@@ -370,7 +371,7 @@ export default class EngineeringMagneticField{
             this.virtualMagnet.position
         );
 
-        const fieldSpeed = this.fieldContext.angularDelta;
+        const fieldSpeed = this.fieldContext.angularDelta * this.polePairs;
         const rotorSpeed = this.rotorVelocity;
 
         // relative motion (ključ)

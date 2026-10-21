@@ -92,10 +92,10 @@ public sealed class Exhibit
             throw new InvalidOperationException(
                 $"Behavior type '{normalizedBehavior}' is not implemented yet.");
         }
-        if (field?.Profile != "rotating-motor")
+        if (field?.Profile != "rotating-field")
         {
             throw new InvalidOperationException(
-                "A rotating motor requires the rotating-motor field profile.");
+                "A rotating motor requires the rotating-field profile.");
         }
 
         var requiredPhaseCount = normalizedBehavior == "three-phase-motor" ? 3 : 2;

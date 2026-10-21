@@ -228,7 +228,7 @@ export default class AdminPanel {
     setFieldForm(field) {
         const form = this.form.elements;
         form.fieldEnabled.checked = Boolean(field);
-        form.fieldProfile.value = field?.profile ?? 'rotating-motor';
+        form.fieldProfile.value = field?.profile ?? 'rotating-field';
         form.fieldReferencePartId.value = field?.referencePartId ?? '';
         form.fieldRotationPartId.value = field?.rotationPartId ?? '';
         form.fieldRotationAxis.value = field?.rotationAxis ?? 'z';
@@ -402,8 +402,14 @@ export default class AdminPanel {
 
     setBehaviorDefaults() {
         const behaviorType = this.form.elements.behaviorType.value;
-        if (behaviorType === 'three-phase-motor') this.form.elements.fieldPhaseCount.value = 3;
-        if (behaviorType === 'two-phase-motor') this.form.elements.fieldPhaseCount.value = 2;
+        if (behaviorType === 'three-phase-motor') {
+            this.form.elements.fieldPhaseCount.value = 3;
+            this.form.elements.fieldCoilCount.value = 6;
+        }
+        if (behaviorType === 'two-phase-motor') {
+            this.form.elements.fieldPhaseCount.value = 2;
+            this.form.elements.fieldCoilCount.value = 8;
+        }
         this.syncFieldEditor();
     }
 
@@ -696,8 +702,8 @@ export default class AdminPanel {
 
         if (isRotatingMotor && field) {
             const requiredPhaseCount = behaviorType === 'three-phase-motor' ? 3 : 2;
-            if (field.profile !== 'rotating-motor') {
-                throw new Error('Мотор мора да користи профил „Обртно поље мотора“.');
+            if (field.profile !== 'rotating-field') {
+                throw new Error('Мотор мора да користи профил „Обртно магнетно поље“.');
             }
             if (field.engineering.phaseCount !== requiredPhaseCount) {
                 throw new Error(`Изабрани мотор мора да има број фаза ${requiredPhaseCount}.`);

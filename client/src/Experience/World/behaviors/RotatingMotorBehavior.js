@@ -12,8 +12,8 @@ export default class RotatingMotorBehavior {
 
     initialize() {
         const fieldConfig = this.exhibit.config.field;
-        if (!fieldConfig || fieldConfig.profile !== 'rotating-motor') {
-            throw new Error('A rotating motor requires the rotating-motor field profile.');
+        if (!fieldConfig || fieldConfig.profile !== 'rotating-field') {
+            throw new Error('A rotating motor requires the rotating-field profile.');
         }
         this.exhibit.activeFieldSystem = new ArtisticMagneticField(this.exhibit);
 
