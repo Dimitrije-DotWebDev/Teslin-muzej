@@ -10,30 +10,44 @@ export default class MagneticFieldContext {
         this.angle = THREE.MathUtils.degToRad(config.phaseOffsetDegrees);
         this.angularVelocity = 0;
         this.angularDelta = 0;
+        this.modelQuaternion = new THREE.Quaternion();
+        this.sourceQuaternion = new THREE.Quaternion();
+        this.relativeQuaternion = new THREE.Quaternion();
+        this.rotationDelta = new THREE.Quaternion();
+        this.initialRotationInverse = this.getRelativeRotation().clone().invert();
         this.exhibit.scene.add(this.root);
         this.updateTransform();
     }
 
     update() {
         this.updateTransform();
-        const rawAngle = this.rotationSource.rotation[this.config.rotationAxis];
-        const nextAngle = rawAngle * this.config.angleMultiplier
-            + THREE.MathUtils.degToRad(this.config.phaseOffsetDegrees);
+        // Read inherited rotation in model space, relative to the starting pose.
+        // The rotor can be animated directly or through an Empty parent.
+        this.rotationDelta.copy(this.getRelativeRotation()).multiply(this.initialRotationInverse);
+        const rawAngle = 2 * Math.atan2(
+            this.rotationDelta[this.config.rotationAxis],
+            this.rotationDelta.w
+        );
 
         if (this.previousAngle === undefined) {
-            this.previousAngle = nextAngle;
-            this.angle = nextAngle;
+            this.previousAngle = rawAngle;
             return;
         }
 
         this.angularDelta = Math.atan2(
-            Math.sin(nextAngle - this.previousAngle),
-            Math.cos(nextAngle - this.previousAngle)
-        );
+            Math.sin(rawAngle - this.previousAngle),
+            Math.cos(rawAngle - this.previousAngle)
+        ) * this.config.angleMultiplier;
         const deltaSeconds = Math.max(this.exhibit.time.delta * 0.001, 0.000001);
         this.angularVelocity = this.angularDelta / deltaSeconds;
         this.angle += this.angularDelta;
-        this.previousAngle = nextAngle;
+        this.previousAngle = rawAngle;
+    }
+
+    getRelativeRotation() {
+        this.exhibit.model.getWorldQuaternion(this.modelQuaternion);
+        this.rotationSource.getWorldQuaternion(this.sourceQuaternion);
+        return this.relativeQuaternion.copy(this.modelQuaternion).invert().multiply(this.sourceQuaternion);
     }
 
     updateTransform() {
