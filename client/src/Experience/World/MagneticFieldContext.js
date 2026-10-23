@@ -4,8 +4,6 @@ export default class MagneticFieldContext {
     constructor(exhibit, config) {
         this.exhibit = exhibit;
         this.config = config;
-        this.reference = exhibit.partRegistry.getRequired(config.referencePartId);
-        this.rotationSource = exhibit.partRegistry.getRequired(config.rotationPartId);
         this.root = new THREE.Group();
         this.angle = THREE.MathUtils.degToRad(config.phaseOffsetDegrees);
         this.angularVelocity = 0;
@@ -14,8 +12,18 @@ export default class MagneticFieldContext {
         this.sourceQuaternion = new THREE.Quaternion();
         this.relativeQuaternion = new THREE.Quaternion();
         this.rotationDelta = new THREE.Quaternion();
-        this.initialRotationInverse = this.getRelativeRotation().clone().invert();
+        this.setSource(config.referencePartId, config.rotationPartId);
         this.exhibit.scene.add(this.root);
+        this.updateTransform();
+    }
+
+    setSource(referencePartId, rotationPartId) {
+        this.reference = this.exhibit.partRegistry.getRequired(referencePartId);
+        this.rotationSource = this.exhibit.partRegistry.getRequired(rotationPartId);
+        this.initialRotationInverse = this.getRelativeRotation().clone().invert();
+        this.previousAngle = undefined;
+        this.angularVelocity = 0;
+        this.angularDelta = 0;
         this.updateTransform();
     }
 

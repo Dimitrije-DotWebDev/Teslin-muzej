@@ -13,6 +13,8 @@ public sealed class FieldConfigurationConfiguration : IEntityTypeConfiguration<F
         builder.Property(field => field.Profile).HasMaxLength(100).IsRequired();
         builder.Property(field => field.ReferencePartId).HasMaxLength(200).IsRequired();
         builder.Property(field => field.RotationPartId).HasMaxLength(200).IsRequired();
+        builder.Property(field => field.SecondaryReferencePartId).HasMaxLength(200);
+        builder.Property(field => field.SecondaryRotationPartId).HasMaxLength(200);
         builder.Property(field => field.RotationAxis).HasMaxLength(1).IsRequired();
         builder.HasIndex(field => field.ExhibitId).IsUnique();
         builder.HasOne(field => field.Exhibit)

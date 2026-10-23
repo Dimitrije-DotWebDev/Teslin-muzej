@@ -3,12 +3,15 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 
 export default class AdminFieldEditor {
-    constructor(root, loadModel, getModelPath, onReferenceChange, onRotationChange, onTransformChange, environmentMap) {
+    constructor(root, loadModel, getModelPath, onReferenceChange, onRotationChange,
+        onSecondaryReferenceChange, onSecondaryRotationChange, onTransformChange, environmentMap) {
         this.root = root;
         this.loadModel = loadModel;
         this.getModelPath = getModelPath;
         this.onReferenceChange = onReferenceChange;
         this.onRotationChange = onRotationChange;
+        this.onSecondaryReferenceChange = onSecondaryReferenceChange;
+        this.onSecondaryRotationChange = onSecondaryRotationChange;
         this.onTransformChange = onTransformChange;
         this.environmentMap = environmentMap;
         this.canvas = root.querySelector('.admin-field-canvas');
@@ -61,6 +64,12 @@ export default class AdminFieldEditor {
         });
         this.root.querySelector('.admin-field-pick-rotation').addEventListener('click', () => {
             this.setPickMode(this.pickMode === 'rotation' ? null : 'rotation');
+        });
+        this.root.querySelector('.admin-field-pick-secondary-reference').addEventListener('click', () => {
+            this.setPickMode(this.pickMode === 'secondary-reference' ? null : 'secondary-reference');
+        });
+        this.root.querySelector('.admin-field-pick-secondary-rotation').addEventListener('click', () => {
+            this.setPickMode(this.pickMode === 'secondary-rotation' ? null : 'secondary-rotation');
         });
         this.root.querySelector('.admin-field-translate').addEventListener('click', () => this.setMode('translate'));
         this.root.querySelector('.admin-field-rotate').addEventListener('click', () => this.setMode('rotate'));
@@ -236,6 +245,38 @@ export default class AdminFieldEditor {
 
     addEngineeringPreview() {
         const group = new THREE.Group();
+        if (this.configuration.profile === 'alternating-core') {
+            const points = [
+                new THREE.Vector3(-2, -1.5, 0),
+                new THREE.Vector3(2, -1.5, 0),
+                new THREE.Vector3(2, 1.5, 0),
+                new THREE.Vector3(-2, 1.5, 0)
+            ];
+            const loop = new THREE.LineLoop(
+                new THREE.BufferGeometry().setFromPoints(points),
+                new THREE.LineBasicMaterial({ color: 0x35c8ff, transparent: true, opacity: 0.8, depthTest: false })
+            );
+            group.add(loop);
+
+            [-1.35, 1.35].forEach((x, index) => {
+                for (let turn = -2; turn <= 2; turn++) {
+                    const coil = new THREE.Mesh(
+                        new THREE.TorusGeometry(0.42, 0.055, 8, 24),
+                        new THREE.MeshBasicMaterial({
+                            color: index === 0 ? 0xff5b43 : 0x35c8ff,
+                            transparent: true,
+                            opacity: 0.85,
+                            depthTest: false
+                        })
+                    );
+                    coil.position.set(x, turn * 0.3, 0);
+                    group.add(coil);
+                }
+            });
+            this.proxy.add(group);
+            return;
+        }
+
         const count = Math.min(this.configuration.engineering.coilCount, 32);
         const phaseCount = this.configuration.engineering.phaseCount;
         for (let index = 0; index < count; index++) {
@@ -277,6 +318,10 @@ export default class AdminFieldEditor {
         this.transformControls.enabled = !mode && Boolean(this.configuration);
         this.root.querySelector('.admin-field-pick-reference').classList.toggle('is-active', mode === 'reference');
         this.root.querySelector('.admin-field-pick-rotation').classList.toggle('is-active', mode === 'rotation');
+        this.root.querySelector('.admin-field-pick-secondary-reference')
+            .classList.toggle('is-active', mode === 'secondary-reference');
+        this.root.querySelector('.admin-field-pick-secondary-rotation')
+            .classList.toggle('is-active', mode === 'secondary-rotation');
     }
 
     pick(event) {
@@ -296,6 +341,8 @@ export default class AdminFieldEditor {
 
         if (this.pickMode === 'reference') this.onReferenceChange(selection.partId);
         if (this.pickMode === 'rotation') this.onRotationChange(selection.partId);
+        if (this.pickMode === 'secondary-reference') this.onSecondaryReferenceChange(selection.partId);
+        if (this.pickMode === 'secondary-rotation') this.onSecondaryRotationChange(selection.partId);
         this.setPickMode(null);
     }
 

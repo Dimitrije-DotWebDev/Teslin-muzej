@@ -3,6 +3,8 @@ import Experience from "../Experience.js";
 import Environment from './Environment.js';
 import Exhibit from './Exhibit.js';
 import RotatingMotorBehavior from './behaviors/RotatingMotorBehavior.js';
+import SymmetricMotorBehavior from './behaviors/SymmetricMotorBehavior.js';
+import TransformerBehavior from './behaviors/TransformerBehavior.js';
 import Floor from './Floor.js';
 import gsap from 'gsap';
 import rollingSound from '../../../static/audio/rollingSound/rolling.wav';
@@ -28,6 +30,18 @@ export default class World{
             },
             'three-phase-motor': {
                 Behavior: RotatingMotorBehavior
+            },
+            'magnetic-motor': {
+                Behavior: RotatingMotorBehavior
+            },
+            'electromagnetic-motor': {
+                Behavior: RotatingMotorBehavior
+            },
+            'symmetric-motor': {
+                Behavior: SymmetricMotorBehavior
+            },
+            'transformer': {
+                Behavior: TransformerBehavior
             }
         };
         this.resources.on('ready', async ()=>{
@@ -70,9 +84,11 @@ export default class World{
             onComplete: () => {
                 setTimeout(() => {
                     this.activeExhibit.setAnimation();
-                    this.rollingAudio = new Audio(rollingSound);
-                    this.rollingAudio.loop = true;
-                    this.rollingAudio.play();
+                    if (this.activeExhibit.behavior.usesRollingSound) {
+                        this.rollingAudio = new Audio(rollingSound);
+                        this.rollingAudio.loop = true;
+                        this.rollingAudio.play();
+                    }
                 }, 1000);
                 this.envronment.ambientLight.intensity = 1.5;
                 this.envronment.sunLight.intensity = 5;

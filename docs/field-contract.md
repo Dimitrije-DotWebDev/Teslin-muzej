@@ -1,6 +1,6 @@
 # Magnetic field configuration contract
 
-Magnetic field placement and visualization parameters are stored in the backend and edited through the admin panel. The GLB model only needs stable `museumPartId` values and the animations named `generator` and `motor`.
+Magnetic field placement and visualization parameters are stored in the backend and edited through the admin panel. The GLB model only needs stable `museumPartId` values and behavior-specific animation names.
 
 ## API representation
 
@@ -9,6 +9,8 @@ Magnetic field placement and visualization parameters are stored in the backend 
   "profile": "rotating-field",
   "referencePartId": "stator-motora",
   "rotationPartId": "rotor-generatora",
+  "secondaryReferencePartId": null,
+  "secondaryRotationPartId": null,
   "transform": {
     "position": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": 0, "y": 0, "z": 0 },
@@ -35,6 +37,8 @@ Magnetic field placement and visualization parameters are stored in the backend 
 
 `rotationPartId` identifies the animated part that drives the magnetic field. For the current motor exhibits this is the generator rotor. The runtime reads the selected local rotation axis and calculates both angle and angular velocity from consecutive animation frames.
 
+The symmetric motor also uses `secondaryReferencePartId` and `secondaryRotationPartId`. They identify the placement reference and rotor for the second machine. The same configured transform is applied relative to the active reference while the generator and motor roles alternate.
+
 The displayed angle is:
 
 ```text
@@ -52,13 +56,17 @@ Supported configuration values are:
 - `alternating-core`
 - `linear-field`
 
-The two-phase and three-phase motor behaviors use `rotating-field`. Other profiles are reserved for their corresponding exhibit behaviors.
+The two-phase, three-phase, magnetic, electromagnetic and symmetric motor behaviors use `rotating-field`. The transformer uses `alternating-core`.
 
 ## Engineering parameters
 
 `phaseCount` defines electrical phase separation. Two phases use 90 degrees, while systems with three or more phases use `360 / phaseCount` degrees. `coilCount` is limited to 32. `polePairs` converts the tracked mechanical rotor angle into the electrical field angle and controls the number of pole repetitions in the artistic view.
 
 For `two-phase-motor`, `phaseCount` must be `2`. For `three-phase-motor`, it must be `3`. The admin panel sets default coil counts to `8` and `6` respectively, and they can be adjusted to match the model.
+
+For `symmetric-motor`, both secondary identifiers are required. The field starts at the primary source, moves to the secondary source when the roles switch and keeps the same transform parameters relative to the selected reference.
+
+For `transformer`, `frequency` controls the alternating flux animation. No GLB animation is required. The artistic view shows circulating flux around the core, while the engineering view shows direction arrows and primary and secondary winding activity.
 
 The virtual magnet and torque vector can be hidden independently without changing the artistic view.
 
@@ -71,3 +79,5 @@ The virtual magnet and torque vector can be hidden independently without changin
 5. Switch between artistic and engineering preview.
 6. Set phase and engineering parameters.
 7. Save the exhibit.
+
+For a symmetric motor, repeat steps 2 and 3 with the secondary reference and source controls before saving.

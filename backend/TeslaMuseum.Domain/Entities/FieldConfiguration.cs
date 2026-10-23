@@ -15,14 +15,16 @@ public sealed class FieldConfiguration
     }
 
     public FieldConfiguration(Guid id, Guid exhibitId, string profile, string referencePartId,
-        string rotationPartId, string rotationAxis, double positionX, double positionY,
+        string rotationPartId, string? secondaryReferencePartId, string? secondaryRotationPartId,
+        string rotationAxis, double positionX, double positionY,
         double positionZ, double rotationX, double rotationY, double rotationZ, double scaleX,
         double scaleY, double scaleZ, double angleMultiplier, double phaseOffsetDegrees,
         int phaseCount, int coilCount, int polePairs, bool showVirtualMagnet, bool showTorqueVector)
     {
         Id = id;
         ExhibitId = exhibitId;
-        Update(profile, referencePartId, rotationPartId, rotationAxis, positionX, positionY,
+        Update(profile, referencePartId, rotationPartId, secondaryReferencePartId,
+            secondaryRotationPartId, rotationAxis, positionX, positionY,
             positionZ, rotationX, rotationY, rotationZ, scaleX, scaleY, scaleZ,
             angleMultiplier, phaseOffsetDegrees, phaseCount, coilCount, polePairs,
             showVirtualMagnet, showTorqueVector);
@@ -34,6 +36,8 @@ public sealed class FieldConfiguration
     public string Profile { get; private set; } = string.Empty;
     public string ReferencePartId { get; private set; } = string.Empty;
     public string RotationPartId { get; private set; } = string.Empty;
+    public string? SecondaryReferencePartId { get; private set; }
+    public string? SecondaryRotationPartId { get; private set; }
     public string RotationAxis { get; private set; } = string.Empty;
     public double PositionX { get; private set; }
     public double PositionY { get; private set; }
@@ -53,6 +57,7 @@ public sealed class FieldConfiguration
     public bool ShowTorqueVector { get; private set; }
 
     public void Update(string profile, string referencePartId, string rotationPartId,
+        string? secondaryReferencePartId, string? secondaryRotationPartId,
         string rotationAxis, double positionX, double positionY, double positionZ,
         double rotationX, double rotationY, double rotationZ, double scaleX, double scaleY,
         double scaleZ, double angleMultiplier, double phaseOffsetDegrees, int phaseCount,
@@ -92,6 +97,8 @@ public sealed class FieldConfiguration
         Profile = normalizedProfile;
         ReferencePartId = Require(referencePartId);
         RotationPartId = Require(rotationPartId);
+        SecondaryReferencePartId = NormalizeOptional(secondaryReferencePartId);
+        SecondaryRotationPartId = NormalizeOptional(secondaryRotationPartId);
         RotationAxis = normalizedAxis;
         PositionX = positionX;
         PositionY = positionY;
@@ -116,4 +123,7 @@ public sealed class FieldConfiguration
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return value.Trim();
     }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

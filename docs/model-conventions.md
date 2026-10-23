@@ -73,6 +73,14 @@ Ovim hotspot:
 - Jedna `museumPartId` vrednost ne sme da se ponovi u istom modelu.
 - Brisanje ili zamena identifikatora smatra se promenom ugovora i može prekinuti postojeće hotspot veze.
 
+## Nazivi animacija
+
+Za dvofazni, trofazni, magnetni i elektromagnetni motor koriste se animacije `generator` i `motor`. Generator prvi pokreće magnetno polje, a motor počinje da se okreće nakon kratkog kašnjenja.
+
+Simetrični motor koristi animacije `motor-1` i `motor-2`. Aplikacija započinje sa `motor-1` kao generatorom i `motor-2` kao motorom, a zatim periodično menja njihove uloge. Oba rotora moraju imati zaseban `museumPartId`, a u admin panelu se biraju primarni i sekundarni izvor polja.
+
+Transformator ne zahteva animaciju u GLB modelu. Njegov naizmenični tok se generiše u aplikaciji na osnovu `alternating-core` profila i podešene frekvencije.
+
 ## Validacija modela
 
 Pri učitavanju ili zameni modela aplikacija treba da prijavi:

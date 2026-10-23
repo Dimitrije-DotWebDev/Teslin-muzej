@@ -25,6 +25,8 @@ export default class AdminPanel {
             () => this.form.elements.modelPath.value.trim(),
             (partId) => this.setFieldPart('fieldReferencePartId', partId),
             (partId) => this.setFieldPart('fieldRotationPartId', partId),
+            (partId) => this.setFieldPart('fieldSecondaryReferencePartId', partId),
+            (partId) => this.setFieldPart('fieldSecondaryRotationPartId', partId),
             (transform) => this.setFieldTransform(transform),
             environmentMap
         );
@@ -60,6 +62,7 @@ export default class AdminPanel {
         this.form.elements.behaviorType.addEventListener('change', () => this.setBehaviorDefaults());
         [
             'fieldProfile', 'fieldReferencePartId', 'fieldRotationPartId', 'fieldRotationAxis',
+            'fieldSecondaryReferencePartId', 'fieldSecondaryRotationPartId',
             'fieldAngleMultiplier', 'fieldPhaseOffsetDegrees', 'fieldPositionX', 'fieldPositionY',
             'fieldPositionZ', 'fieldTransformRotationX', 'fieldTransformRotationY',
             'fieldTransformRotationZ', 'fieldScaleX', 'fieldScaleY', 'fieldScaleZ',
@@ -233,6 +236,8 @@ export default class AdminPanel {
         form.fieldProfile.value = field?.profile ?? 'rotating-field';
         form.fieldReferencePartId.value = field?.referencePartId ?? '';
         form.fieldRotationPartId.value = field?.rotationPartId ?? '';
+        form.fieldSecondaryReferencePartId.value = field?.secondaryReferencePartId ?? '';
+        form.fieldSecondaryRotationPartId.value = field?.secondaryRotationPartId ?? '';
         form.fieldRotationAxis.value = field?.rotationAxis ?? 'z';
         form.fieldAngleMultiplier.value = field?.angleMultiplier ?? 1;
         form.fieldPhaseOffsetDegrees.value = field?.phaseOffsetDegrees ?? 0;
@@ -260,6 +265,8 @@ export default class AdminPanel {
             profile: form.fieldProfile.value,
             referencePartId: form.fieldReferencePartId.value.trim(),
             rotationPartId: form.fieldRotationPartId.value.trim(),
+            secondaryReferencePartId: form.fieldSecondaryReferencePartId.value.trim() || null,
+            secondaryRotationPartId: form.fieldSecondaryRotationPartId.value.trim() || null,
             transform: {
                 position: {
                     x: Number(form.fieldPositionX.value),
@@ -405,12 +412,26 @@ export default class AdminPanel {
     setBehaviorDefaults() {
         const behaviorType = this.form.elements.behaviorType.value;
         if (behaviorType === 'three-phase-motor') {
+            this.form.elements.fieldProfile.value = 'rotating-field';
             this.form.elements.fieldPhaseCount.value = 3;
             this.form.elements.fieldCoilCount.value = 6;
         }
         if (behaviorType === 'two-phase-motor') {
+            this.form.elements.fieldProfile.value = 'rotating-field';
             this.form.elements.fieldPhaseCount.value = 2;
             this.form.elements.fieldCoilCount.value = 8;
+        }
+        if (behaviorType === 'magnetic-motor' || behaviorType === 'electromagnetic-motor') {
+            this.form.elements.fieldProfile.value = 'rotating-field';
+        }
+        if (behaviorType === 'symmetric-motor') {
+            this.form.elements.fieldProfile.value = 'rotating-field';
+            this.form.elements.fieldPhaseCount.value = 2;
+        }
+        if (behaviorType === 'transformer') {
+            this.form.elements.fieldProfile.value = 'alternating-core';
+            this.form.elements.fieldPhaseCount.value = 1;
+            this.form.elements.fieldPolePairs.value = 1;
         }
         this.syncFieldEditor();
     }
@@ -696,20 +717,47 @@ export default class AdminPanel {
 
     validateModelConfiguration(resource, field, behaviorType) {
         const registry = new ModelPartRegistry(resource.scene);
-        const isRotatingMotor = behaviorType === 'two-phase-motor' || behaviorType === 'three-phase-motor';
+        const standardMotors = [
+            'two-phase-motor',
+            'three-phase-motor',
+            'magnetic-motor',
+            'electromagnetic-motor'
+        ];
+        const isStandardMotor = standardMotors.includes(behaviorType);
+        const isSymmetricMotor = behaviorType === 'symmetric-motor';
 
-        if (isRotatingMotor && resource.animations.length === 0) {
+        if ((isStandardMotor || isSymmetricMotor) && resource.animations.length === 0) {
             throw new Error('Модел мотора мора да садржи бар једну анимацију.');
         }
 
-        if (isRotatingMotor && field) {
-            const requiredPhaseCount = behaviorType === 'three-phase-motor' ? 3 : 2;
+        if (isStandardMotor && field) {
             if (field.profile !== 'rotating-field') {
                 throw new Error('Мотор мора да користи профил „Обртно магнетно поље“.');
             }
-            if (field.engineering.phaseCount !== requiredPhaseCount) {
+            const requiredPhaseCount = behaviorType === 'three-phase-motor'
+                ? 3
+                : behaviorType === 'two-phase-motor' ? 2 : null;
+            if (requiredPhaseCount && field.engineering.phaseCount !== requiredPhaseCount) {
                 throw new Error(`Изабрани мотор мора да има број фаза ${requiredPhaseCount}.`);
             }
+        }
+
+        if (isSymmetricMotor && field) {
+            if (field.profile !== 'rotating-field') {
+                throw new Error('Симетрични мотор мора да користи профил „Обртно магнетно поље“.');
+            }
+            if (!field.secondaryReferencePartId || !field.secondaryRotationPartId) {
+                throw new Error('Симетрични мотор захтева секундарну референцу и секундарни извор поља.');
+            }
+            const animationNames = resource.animations.map((clip) => clip.name.toLowerCase());
+            if (!animationNames.some((name) => name.includes('motor-1')) ||
+                !animationNames.some((name) => name.includes('motor-2'))) {
+                throw new Error('Симетрични мотор мора да има анимације „motor-1“ и „motor-2“.');
+            }
+        }
+
+        if (behaviorType === 'transformer' && field?.profile !== 'alternating-core') {
+            throw new Error('Трансформатор мора да користи профил „Променљиви флукс језгра“.');
         }
 
         if (field) {
@@ -718,6 +766,8 @@ export default class AdminPanel {
             }
             registry.getRequired(field.referencePartId);
             registry.getRequired(field.rotationPartId);
+            if (field.secondaryReferencePartId) registry.getRequired(field.secondaryReferencePartId);
+            if (field.secondaryRotationPartId) registry.getRequired(field.secondaryRotationPartId);
         }
 
         return registry.parts.size;

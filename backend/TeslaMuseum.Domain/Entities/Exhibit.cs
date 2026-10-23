@@ -81,13 +81,41 @@ public sealed class Exhibit
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static bool IsRotatingMotor(string behaviorType) =>
-        behaviorType.Trim() is "two-phase-motor" or "three-phase-motor";
+    private static bool IsStandardMotor(string behaviorType) =>
+        behaviorType is "two-phase-motor" or "three-phase-motor" or
+            "magnetic-motor" or "electromagnetic-motor";
 
     private static void ValidatePublishedBehavior(string behaviorType, FieldConfiguration? field)
     {
         var normalizedBehavior = behaviorType.Trim();
-        if (!IsRotatingMotor(normalizedBehavior))
+
+        if (normalizedBehavior == "transformer")
+        {
+            if (field?.Profile != "alternating-core")
+            {
+                throw new InvalidOperationException(
+                    "A transformer requires the alternating-core field profile.");
+            }
+            return;
+        }
+
+        if (normalizedBehavior == "symmetric-motor")
+        {
+            if (field?.Profile != "rotating-field")
+            {
+                throw new InvalidOperationException(
+                    "A symmetric motor requires the rotating-field profile.");
+            }
+            if (string.IsNullOrWhiteSpace(field.SecondaryReferencePartId) ||
+                string.IsNullOrWhiteSpace(field.SecondaryRotationPartId))
+            {
+                throw new InvalidOperationException(
+                    "A symmetric motor requires two field references and two rotation sources.");
+            }
+            return;
+        }
+
+        if (!IsStandardMotor(normalizedBehavior))
         {
             throw new InvalidOperationException(
                 $"Behavior type '{normalizedBehavior}' is not implemented yet.");
@@ -98,11 +126,16 @@ public sealed class Exhibit
                 "A rotating motor requires the rotating-field profile.");
         }
 
-        var requiredPhaseCount = normalizedBehavior == "three-phase-motor" ? 3 : 2;
-        if (field.PhaseCount != requiredPhaseCount)
+        var requiredPhaseCount = normalizedBehavior switch
+        {
+            "two-phase-motor" => 2,
+            "three-phase-motor" => 3,
+            _ => (int?)null
+        };
+        if (requiredPhaseCount.HasValue && field.PhaseCount != requiredPhaseCount.Value)
         {
             throw new InvalidOperationException(
-                $"The selected motor requires phaseCount = {requiredPhaseCount}.");
+                $"The selected motor requires phaseCount = {requiredPhaseCount.Value}.");
         }
     }
 }

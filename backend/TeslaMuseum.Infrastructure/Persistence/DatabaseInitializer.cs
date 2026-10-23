@@ -18,7 +18,7 @@ public static class DatabaseInitializer
         if (!isNewDatabase || await dbContext.Exhibits.AnyAsync()) return;
 
         var field = new FieldConfiguration(Guid.Parse("c6c1d78a-bbbc-4458-911a-4938cb7f5357"),
-            ExhibitId, "rotating-field", "stator-motora", "rotor-generatora", "z",
+            ExhibitId, "rotating-field", "stator-motora", "rotor-generatora", null, null, "z",
             0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 2, 8, 1, true, true);
         var exhibit = new Exhibit(ExhibitId, "two-phase-motor", "Двофазни мотор",
             "Теслин индукциони систем",

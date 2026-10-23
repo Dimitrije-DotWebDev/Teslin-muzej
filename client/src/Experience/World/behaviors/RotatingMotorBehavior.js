@@ -8,6 +8,7 @@ export default class RotatingMotorBehavior {
     constructor(exhibit) {
         this.exhibit = exhibit;
         this.loadingScreen = new LoadingScreen();
+        this.usesRollingSound = true;
     }
 
     initialize() {
@@ -76,6 +77,15 @@ export default class RotatingMotorBehavior {
         );
     }
 
+    stopRotorAnimations() {
+        this.animation.actions.forEach(({ action }) =>
+            this.animation.setActionTimeScale(action, 0, 3, 2));
+    }
+
+    getPolarityAction() {
+        return this.animation?.motor;
+    }
+
     setControls() {
         this.controlsFolder = this.exhibit.debug.getControls().addFolder('Мотор');
         this.controlsParams = {
@@ -110,8 +120,7 @@ export default class RotatingMotorBehavior {
                 return;
             }
 
-            this.animation.actions.forEach(({ action }) =>
-                this.animation.setActionTimeScale(action, 0, 3, 2));
+            this.stopRotorAnimations();
         });
 
         this.controlsFolder
@@ -131,8 +140,9 @@ export default class RotatingMotorBehavior {
             .onChange((value) => {
                 this.controlsParams.fieldPolarity = value;
 
-                if (this.controlsParams.power && this.animation?.motor) {
-                    this.animation.setActionTimeScale(this.animation.motor, value, 3);
+                const action = this.getPolarityAction();
+                if (this.controlsParams.power && action) {
+                    this.animation.setActionTimeScale(action, value, 3);
                 }
             });
 

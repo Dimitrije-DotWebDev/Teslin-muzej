@@ -8,7 +8,8 @@ public sealed record AdminExhibitDto(Guid Id, string Slug, string Title, string 
     FieldConfigurationDto? Field, bool IsAvailable, int DisplayOrder);
 
 public sealed record FieldConfigurationDto(string Profile, string ReferencePartId,
-    string RotationPartId, FieldTransformDto Transform, string RotationAxis,
+    string RotationPartId, string? SecondaryReferencePartId, string? SecondaryRotationPartId,
+    FieldTransformDto Transform, string RotationAxis,
     double AngleMultiplier, double PhaseOffsetDegrees, EngineeringFieldDto Engineering);
 public sealed record FieldTransformDto(FieldVector3Dto Position, FieldVector3Dto Rotation,
     FieldVector3Dto Scale);
@@ -55,6 +56,12 @@ public sealed class SaveFieldConfigurationRequest
 
     [Required, MaxLength(200)]
     public string RotationPartId { get; init; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? SecondaryReferencePartId { get; init; }
+
+    [MaxLength(200)]
+    public string? SecondaryRotationPartId { get; init; }
 
     [Required]
     public SaveFieldTransformRequest Transform { get; init; } = new();
@@ -138,6 +145,7 @@ public static class AdminExhibitMapping
 
     public static FieldConfigurationDto ToDto(this FieldConfiguration field) => new(
         field.Profile, field.ReferencePartId, field.RotationPartId,
+        field.SecondaryReferencePartId, field.SecondaryRotationPartId,
         new FieldTransformDto(
             new FieldVector3Dto(field.PositionX, field.PositionY, field.PositionZ),
             new FieldVector3Dto(field.RotationX, field.RotationY, field.RotationZ),
@@ -149,7 +157,8 @@ public static class AdminExhibitMapping
     public static FieldConfiguration ToEntity(this SaveFieldConfigurationRequest request,
         Guid exhibitId, Guid? id = null) => new(
         id ?? Guid.NewGuid(), exhibitId, request.Profile, request.ReferencePartId,
-        request.RotationPartId, request.RotationAxis,
+        request.RotationPartId, request.SecondaryReferencePartId,
+        request.SecondaryRotationPartId, request.RotationAxis,
         request.Transform.Position.X, request.Transform.Position.Y, request.Transform.Position.Z,
         request.Transform.Rotation.X, request.Transform.Rotation.Y, request.Transform.Rotation.Z,
         request.Transform.Scale.X, request.Transform.Scale.Y, request.Transform.Scale.Z,
@@ -160,7 +169,8 @@ public static class AdminExhibitMapping
 
     public static void ApplyTo(this SaveFieldConfigurationRequest request,
         FieldConfiguration field) => field.Update(
-        request.Profile, request.ReferencePartId, request.RotationPartId, request.RotationAxis,
+        request.Profile, request.ReferencePartId, request.RotationPartId,
+        request.SecondaryReferencePartId, request.SecondaryRotationPartId, request.RotationAxis,
         request.Transform.Position.X, request.Transform.Position.Y, request.Transform.Position.Z,
         request.Transform.Rotation.X, request.Transform.Rotation.Y, request.Transform.Rotation.Z,
         request.Transform.Scale.X, request.Transform.Scale.Y, request.Transform.Scale.Z,

@@ -115,6 +115,12 @@ namespace TeslaMuseum.Infrastructure.Persistence.Migrations
                     b.Property<double>("ScaleX").HasColumnType("REAL");
                     b.Property<double>("ScaleY").HasColumnType("REAL");
                     b.Property<double>("ScaleZ").HasColumnType("REAL");
+                    b.Property<string>("SecondaryReferencePartId")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+                    b.Property<string>("SecondaryRotationPartId")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
                     b.Property<bool>("ShowTorqueVector").HasColumnType("INTEGER");
                     b.Property<bool>("ShowVirtualMagnet").HasColumnType("INTEGER");
 

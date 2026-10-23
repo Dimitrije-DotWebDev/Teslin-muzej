@@ -8,6 +8,7 @@ public sealed record ExhibitDetailsDto(string Id, string Title, string Eyebrow, 
     string BehaviorType, string ModelPath, string? ThumbnailPath, ExhibitFieldDto? Field,
     IReadOnlyList<HotspotDto> Hotspots);
 public sealed record ExhibitFieldDto(string Profile, string ReferencePartId, string RotationPartId,
+    string? SecondaryReferencePartId, string? SecondaryRotationPartId,
     FieldTransformDto Transform, string RotationAxis, double AngleMultiplier,
     double PhaseOffsetDegrees, EngineeringFieldDto Engineering);
 public sealed record FieldTransformDto(FieldVector3Dto Position, FieldVector3Dto Rotation,
@@ -30,6 +31,7 @@ public sealed class GetExhibitDetailsQueryHandler(IExhibitRepository exhibitRepo
 
         var field = exhibit.Field is null ? null : new ExhibitFieldDto(
             exhibit.Field.Profile, exhibit.Field.ReferencePartId, exhibit.Field.RotationPartId,
+            exhibit.Field.SecondaryReferencePartId, exhibit.Field.SecondaryRotationPartId,
             new FieldTransformDto(
                 new FieldVector3Dto(exhibit.Field.PositionX, exhibit.Field.PositionY, exhibit.Field.PositionZ),
                 new FieldVector3Dto(exhibit.Field.RotationX, exhibit.Field.RotationY, exhibit.Field.RotationZ),
