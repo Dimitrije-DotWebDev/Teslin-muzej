@@ -60,13 +60,14 @@ export default class ExhibitCatalog {
     }
 
     show() {
+        clearTimeout(this.hideTimer);
         this.element.hidden = false;
         requestAnimationFrame(() => this.element.classList.add('is-visible'));
     }
 
     hide() {
         this.element.classList.remove('is-visible');
-        setTimeout(() => {
+        this.hideTimer = setTimeout(() => {
             this.element.hidden = true;
         }, 500);
     }

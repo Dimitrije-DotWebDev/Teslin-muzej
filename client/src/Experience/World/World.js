@@ -20,6 +20,8 @@ export default class World{
         this.scene = this.experience.scene;
         this.resources = this.experience.resources;
         this.loadingScreen = new LoadingScreen();
+        this.backButton = document.getElementById('back-to-catalog');
+        this.backButton.addEventListener('click', () => this.returnToCatalog());
         const apiUrl = new URLSearchParams(window.location.search).get('api')
             || window.TESLA_MUSEUM_API_URL
             || baseURL;
@@ -80,11 +82,13 @@ export default class World{
         this.catalog?.setExhibits(exhibits);
     }
     introAnimation(){
-        const t1 = gsap.timeline({
+        const exhibit = this.activeExhibit;
+        const t1 = this.introTimeline = gsap.timeline({
             onComplete: () => {
-                setTimeout(() => {
-                    this.activeExhibit.setAnimation();
-                    if (this.activeExhibit.behavior.usesRollingSound) {
+                this.animationStartTimer = setTimeout(() => {
+                    if (this.activeExhibit !== exhibit) return;
+                    exhibit.setAnimation();
+                    if (exhibit.behavior.usesRollingSound) {
                         this.rollingAudio = new Audio(rollingSound);
                         this.rollingAudio.loop = true;
                         this.rollingAudio.play();
@@ -105,6 +109,22 @@ export default class World{
           .to(this.envronment.ambientLight, {intensity: 1.5, duration: 0.4}, "0");
 
         t1.to(this.experience.camera.instance.position, {x: -1, y: 3, z: 13, duration: 3, ease: "power2.inOut"}, "0");
+    }
+
+    returnToCatalog(){
+        if (!this.activeExhibit || this.isOpeningExhibit) return;
+        this.backButton.hidden = true;
+        this.introTimeline?.kill();
+        clearTimeout(this.animationStartTimer);
+        this.rollingAudio?.pause();
+        this.rollingAudio = null;
+        this.activeExhibit.dispose();
+        this.activeExhibit = null;
+        if (!this.experience.debug.active) this.experience.debug.getControls().hide();
+        this.envronment.ambientLight.intensity = 1.5;
+        this.envronment.sunLight.intensity = 5;
+        this.catalog.show();
+        this.catalog.grid.querySelector('.catalog-card:not(:disabled)')?.focus();
     }
 
     async openExhibit(exhibitData){
@@ -138,6 +158,8 @@ export default class World{
             });
 
             this.catalog.hide();
+            this.experience.debug.getControls().show();
+            this.backButton.hidden = false;
             this.loadingScreen.hide();
             this.introAnimation();
         } catch (error) {

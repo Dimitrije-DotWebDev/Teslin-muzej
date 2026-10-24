@@ -106,5 +106,8 @@ export default class Exhibit {
         this.fieldContext = null;
         this.behavior.dispose();
         this.hotspotController.dispose();
+        const controlsFolder = this.behavior.controlsFolder;
+        if (controlsFolder) controlsFolder.parent.removeFolder(controlsFolder);
+        this.model.removeFromParent();
     }
 }
