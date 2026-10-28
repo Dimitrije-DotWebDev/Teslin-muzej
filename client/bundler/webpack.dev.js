@@ -23,6 +23,16 @@ module.exports = merge(
             useLocalIp: true,
             disableHostCheck: true,
             historyApiFallback: true,
+            proxy: {
+                '/api': {
+                    target: 'http://127.0.0.1:5095',
+                    changeOrigin: true
+                },
+                '/uploads': {
+                    target: 'http://127.0.0.1:5095',
+                    changeOrigin: true
+                }
+            },
             overlay: true,
             noInfo: true,
             after: function(app, server, compiler)

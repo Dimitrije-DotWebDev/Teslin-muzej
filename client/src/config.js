@@ -1,1 +1,2 @@
-export const baseURL = 'http://localhost:5095/api';
+// Same-origin requests work on localhost and when visitors use the laptop's LAN IP.
+export const baseURL = '/api';

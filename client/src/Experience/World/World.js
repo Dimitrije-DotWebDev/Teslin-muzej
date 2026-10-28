@@ -12,6 +12,7 @@ import ExhibitCatalog from '../UI/ExhibitCatalog.js';
 import LoadingScreen from '../Utils/LoadingScreen.js';
 import ExhibitApi from '../Api/ExhibitApi.js';
 import AdminPanel from '../UI/AdminPanel.js';
+import AutomaticTour from '../UI/AutomaticTour.js';
 import { baseURL } from '../../config.js';
 
 export default class World{
@@ -56,6 +57,7 @@ export default class World{
                 this.resources.items.environmentMap
             );
             await this.initializeCatalog();
+            if (this.catalog) this.automaticTour = new AutomaticTour(this);
         });
     }
     async initializeCatalog(){
@@ -91,7 +93,7 @@ export default class World{
                     if (exhibit.behavior.usesRollingSound) {
                         this.rollingAudio = new Audio(rollingSound);
                         this.rollingAudio.loop = true;
-                        this.rollingAudio.play();
+                        this.rollingAudio.play().catch(() => {});
                     }
                 }, 1000);
                 this.envronment.ambientLight.intensity = 1.5;
@@ -111,7 +113,7 @@ export default class World{
         t1.to(this.experience.camera.instance.position, {x: -1, y: 3, z: 13, duration: 3, ease: "power2.inOut"}, "0");
     }
 
-    returnToCatalog(){
+    returnToCatalog({ focus = true } = {}){
         if (!this.activeExhibit || this.isOpeningExhibit) return;
         this.backButton.hidden = true;
         this.introTimeline?.kill();
@@ -120,15 +122,17 @@ export default class World{
         this.rollingAudio = null;
         this.activeExhibit.dispose();
         this.activeExhibit = null;
+        this.activeExhibitId = null;
+        this.experience.camera.controls.target.set(0, 0, 0);
         if (!this.experience.debug.active) this.experience.debug.getControls().hide();
         this.envronment.ambientLight.intensity = 1.5;
         this.envronment.sunLight.intensity = 5;
         this.catalog.show();
-        this.catalog.grid.querySelector('.catalog-card:not(:disabled)')?.focus();
+        if (focus) this.catalog.grid.querySelector('.catalog-card:not(:disabled)')?.focus();
     }
 
-    async openExhibit(exhibitData){
-        if (this.isOpeningExhibit) return;
+    async openExhibit(exhibitData, { shouldContinue = () => true } = {}){
+        if (this.isOpeningExhibit) return false;
 
         this.isOpeningExhibit = true;
         this.catalog.setBusy(exhibitData.id, true);
@@ -136,6 +140,7 @@ export default class World{
 
         try {
             const details = await this.exhibitApi.getExhibit(exhibitData.id);
+            if (!shouldContinue()) { this.loadingScreen.hide(); return false; }
             const exhibitType = this.exhibitTypes[details.behaviorType];
             if (!exhibitType || !details.modelPath) {
                 throw new Error('Unsupported exhibit behavior: ' + details.behaviorType + '.');
@@ -145,6 +150,8 @@ export default class World{
                 this.exhibitApi.resolveAssetUrl(details.modelPath),
                 (progress) => this.loadingScreen.setProgress(progress * 0.85)
             );
+
+            if (!shouldContinue()) { this.loadingScreen.hide(); return false; }
 
             this.loadingScreen.setProgress(0.9);
             this.activeExhibit = new Exhibit({
@@ -158,20 +165,24 @@ export default class World{
             });
 
             this.catalog.hide();
+            this.activeExhibitId = exhibitData.id;
             this.experience.debug.getControls().show();
             this.backButton.hidden = false;
             this.loadingScreen.hide();
             this.introAnimation();
+            return true;
         } catch (error) {
             console.error(error);
             this.loadingScreen.hide();
             this.catalog.showError('Експонат тренутно није могуће учитати. Покушајте поново.');
+            return false;
         } finally {
             this.catalog.setBusy(exhibitData.id, false);
             this.isOpeningExhibit = false;
         }
     }
     update(){
+        this.automaticTour?.update();
         this.activeExhibit?.update();
     }
 }

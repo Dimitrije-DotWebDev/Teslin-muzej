@@ -76,9 +76,10 @@ export class Hotspot {
         const { line, panel } = this.progress;
         const glow = Math.max(this.progress.glow, this.hoverGlow.value);
         for (const entry of this.materials) {
-            entry.clones.forEach((material, index) => {
+            const current = Array.isArray(entry.child.material) ? entry.child.material : [entry.child.material];
+            current.forEach((material, index) => {
                 if (!material.emissive) return;
-                const baseline = entry.baselines[index];
+                const baseline = material.museumEmission ?? entry.baselines[index];
                 material.emissive.copy(baseline.color).lerp(this.glowColor, glow * 0.8);
                 material.emissiveIntensity = baseline.intensity + glow * 0.65;
             });

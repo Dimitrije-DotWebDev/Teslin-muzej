@@ -112,10 +112,7 @@ export default class RotatingMotorBehavior {
             powerSwitch.classList.toggle('on', this.controlsParams.power);
 
             if (this.controlsParams.power) {
-                this.animation.actions.forEach(({ action }) => {
-                    if (action === this.animation.generator || action === this.animation.motor) return;
-                    this.animation.setActionTimeScale(action, 1, 3);
-                });
+                this.startAuxiliaryAnimations();
                 this.startRotorAnimations();
                 return;
             }
@@ -147,6 +144,13 @@ export default class RotatingMotorBehavior {
             });
 
         this.exhibit.addHotspotControls(this.controlsFolder, this.controlsParams);
+    }
+
+    startAuxiliaryAnimations() {
+        this.animation.actions.forEach(({ action }) => {
+            if (action === this.animation.generator || action === this.animation.motor) return;
+            this.animation.setActionTimeScale(action, 1, 3);
+        });
     }
 
     async switchField(target = 'artistic') {

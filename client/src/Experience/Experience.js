@@ -55,6 +55,7 @@ export default class Experience{
     destroy(){
         this.sizes.off('resize');
         this.time.off('tick');
+        this.world.automaticTour?.dispose();
         this.world.activeExhibit?.dispose();
 
         this.scene.traverse((child)=>{

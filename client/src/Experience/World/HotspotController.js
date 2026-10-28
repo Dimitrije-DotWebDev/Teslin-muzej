@@ -111,9 +111,17 @@ export default class HotspotController {
         this.hotspots.forEach(hotspot => hotspot.setVisible(value));
     }
 
+    showAutomatic(hotspot) {
+        this.close();
+        this.automatic = true;
+        this.pointerEvent = null;
+        this.active = this.pinned = hotspot;
+        hotspot.show();
+    }
+
     update() {
         this.model.updateWorldMatrix(true, true);
-        if (this.pointerEvent && !this.press) this.hover(this.pick(this.pointerEvent));
+        if (!this.automatic && this.pointerEvent && !this.press) this.hover(this.pick(this.pointerEvent));
         const rect = this.canvas.getBoundingClientRect();
         this.hotspots.forEach(hotspot => hotspot.update(this.experience.camera.instance, rect));
     }

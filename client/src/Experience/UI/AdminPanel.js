@@ -749,10 +749,16 @@ export default class AdminPanel {
             if (!field.secondaryReferencePartId || !field.secondaryRotationPartId) {
                 throw new Error('Симетрични мотор захтева секундарну референцу и секундарни извор поља.');
             }
-            const animationNames = resource.animations.map((clip) => clip.name.toLowerCase());
-            if (!animationNames.some((name) => name.includes('motor-1')) ||
-                !animationNames.some((name) => name.includes('motor-2'))) {
+            const animationNames = resource.animations.map((clip) =>
+                clip.name.toLowerCase().trim().replace(/[_.\s]+/g, '-'));
+            if (!animationNames.includes('motor-1') || !animationNames.includes('motor-2')) {
                 throw new Error('Симетрични мотор мора да има анимације „motor-1“ и „motor-2“.');
+            }
+            for (const index of [1, 2]) {
+                if (!animationNames.includes(`pokretanje-motor-${index}`) &&
+                    !animationNames.includes(`pokretanje-motora-${index}`)) {
+                    throw new Error(`Симетрични мотор мора да има анимацију „pokretanje-motor-${index}“.`);
+                }
             }
         }
 

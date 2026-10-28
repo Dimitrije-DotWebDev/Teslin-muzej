@@ -254,10 +254,11 @@ export default class ArtisticMagneticField{
     }
     update() {
 
-        const leadAngle = THREE.MathUtils.degToRad(8.0) + Math.sin(this.time.elapsed * 0.001 * 2.0) * 0.03;
+        // A fixed phase lead preserves synchronization, including at standstill.
+        const leadAngle = THREE.MathUtils.degToRad(8.0);
 
         this.material.uniforms.uTime.value =
-            this.time.elapsed * 0.001;
+            this.fieldContext.angle;
 
         this.material.uniforms.uRotorAngle.value =
             this.fieldContext.angle * this.config.polePairs + Math.PI / 3 + leadAngle;
@@ -270,7 +271,7 @@ export default class ArtisticMagneticField{
             );
 
         this.outerMaterial.uniforms.uTime.value =
-            this.time.elapsed * 0.001;
+            this.fieldContext.angle;
 
         this.outerMaterial.uniforms.uRotorAngle.value =
             this.fieldContext.angle * this.config.polePairs + Math.PI / 3 + leadAngle;

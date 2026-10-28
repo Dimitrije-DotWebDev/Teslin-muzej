@@ -3,13 +3,15 @@ import gsap from 'gsap';
 import LoadingScreen from '../../Utils/LoadingScreen.js';
 import TransformerArtisticField from '../TransformerArtisticField.js';
 import TransformerEngineeringField from '../TransformerEngineeringField.js';
+import TransformerLighting from '../TransformerLighting.js';
 
 export default class TransformerBehavior {
     constructor(exhibit) {
         this.exhibit = exhibit;
         this.loadingScreen = new LoadingScreen();
-        this.powerLevel = 1;
+        this.powerLevel = 0;
         this.frequency = 1;
+        this.lightLevels = { bulbs: 1, tubes: 1 };
         this.usesRollingSound = false;
     }
 
@@ -19,6 +21,8 @@ export default class TransformerBehavior {
         }
         this.exhibit.activeFieldSystem = new TransformerArtisticField(this.exhibit);
         this.setControls();
+        this.lighting = new TransformerLighting(this.exhibit.model);
+        gsap.to(this, { powerLevel: 1, duration: 1.2, ease: 'power2.inOut' });
     }
 
     setAnimation() {
@@ -32,6 +36,19 @@ export default class TransformerBehavior {
             action.play();
             return action;
         });
+        this.animation.mixer.timeScale = this.controlsParams.power ? 1 : 0;
+    }
+
+    setPower(enabled) {
+        this.controlsParams.power = enabled;
+        // Freeze in the current pose; resuming must not reset the generator clip.
+        if (this.animation) this.animation.mixer.timeScale = enabled ? 1 : 0;
+        gsap.killTweensOf(this, 'powerLevel');
+        gsap.to(this, {
+            powerLevel: enabled ? 1 : 0,
+            duration: 1.2,
+            ease: 'power2.inOut'
+        });
     }
 
     setControls() {
@@ -39,7 +56,9 @@ export default class TransformerBehavior {
         this.controlsParams = {
             приказ: 'Уметнички',
             power: true,
-            frequency: 1
+            frequency: 1,
+            bulbs: true,
+            tubes: true
         };
 
         const powerSwitch = document.createElement('li');
@@ -52,15 +71,22 @@ export default class TransformerBehavior {
         `;
         this.controlsFolder.__ul.appendChild(powerSwitch);
         powerSwitch.addEventListener('click', () => {
-            this.controlsParams.power = !this.controlsParams.power;
+            this.setPower(!this.controlsParams.power);
             powerSwitch.classList.toggle('on', this.controlsParams.power);
-            gsap.killTweensOf(this, 'powerLevel');
-            gsap.to(this, {
-                powerLevel: this.controlsParams.power ? 1 : 0,
-                duration: 1.2,
-                ease: 'power2.inOut'
-            });
         });
+
+        const lightingFolder = this.controlsFolder.addFolder('Осветљење');
+        for (const [key, label] of [['bulbs', 'Сијалице'], ['tubes', 'Светлеће цеви']]) {
+            lightingFolder.add(this.controlsParams, key).name(label).onChange(value => {
+                gsap.killTweensOf(this.lightLevels, key);
+                gsap.to(this.lightLevels, {
+                    [key]: value ? 1 : 0,
+                    duration: 0.45,
+                    ease: 'power2.inOut'
+                });
+            });
+        }
+        lightingFolder.open();
 
         this.controlsFolder
             .add(this.controlsParams, 'приказ', ['Уметнички', 'Инжењерски'])
@@ -89,6 +115,7 @@ export default class TransformerBehavior {
         this.exhibit.activeFieldSystem = null;
         this.loadingScreen.setProgress(0.35);
         await new Promise((resolve) => setTimeout(resolve, 50));
+        if (this.disposed) return;
 
         this.exhibit.activeFieldSystem = target === 'engineering'
             ? new TransformerEngineeringField(this.exhibit)
@@ -100,10 +127,14 @@ export default class TransformerBehavior {
 
     update() {
         this.animation?.mixer.update(this.exhibit.time.delta * 0.001);
+        this.lighting?.update(this.exhibit.time.delta * 0.001, this.powerLevel, this.frequency, this.lightLevels);
     }
 
     dispose() {
+        this.disposed = true;
         gsap.killTweensOf(this);
+        gsap.killTweensOf(this.lightLevels);
         this.animation?.mixer.stopAllAction();
+        this.lighting?.dispose();
     }
 }

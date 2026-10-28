@@ -23,7 +23,7 @@ public static class DatabaseInitializer
         var exhibit = new Exhibit(ExhibitId, "two-phase-motor", "Двофазни мотор",
             "Теслин индукциони систем",
             "Теслин двофазни систем приказује стварање обртног магнетног поља и његово дејство на ротор мотора.",
-            "two-phase-motor", "/models/TwoPhasesGenerator/glb/TeslinDvofazniMotor.glb", null,
+            "two-phase-motor", "/models/TwoPhasesGenerator/glb/TeslinDvofazniMotor-verzija skalabilna test animacije prepravljene.glb", null,
             field, true, 0);
 
         AddHotspot(exhibit, "11d36f8f-3b82-4764-8c93-bdefd02d8cb6", "motor-windings", "Навоји мотора",

@@ -64,7 +64,9 @@ The two-phase, three-phase, magnetic, electromagnetic and symmetric motor behavi
 
 For `two-phase-motor`, `phaseCount` must be `2`. For `three-phase-motor`, it must be `3`. The admin panel sets default coil counts to `8` and `6` respectively, and they can be adjusted to match the model.
 
-For `symmetric-motor`, both secondary identifiers are required. The field starts at the primary source, moves to the secondary source when the roles switch and keeps the same transform parameters relative to the selected reference.
+For `symmetric-motor`, both secondary identifiers are required. Primary identifiers describe motor 1 and secondary identifiers describe motor 2. The user selects the generator; roles do not switch automatically. The field uses the driven motor's reference and rotation source, keeping the same transform parameters relative to the selected reference. Its angle follows the driven rotor during acceleration, reversal and stopping, including rotation inherited from an Empty parent. During the visible field stage before the motor starts, the field remains stationary with the driven rotor.
+
+The GLB must contain looping `motor-1` and `motor-2` clips and one-shot `pokretanje-motor-1` and `pokretanje-motor-2` clips (`pokretanje-motora-1/2` is also accepted). Only the selected generator plays its startup clip, holding the final pose, then starts rotating. After 1.5 seconds its field appears at the other motor; 0.75 seconds later that motor starts without a startup clip. Other GLB clips, including legacy `Take 001`, are not played. Changing generator restarts this sequence; switching power off cancels pending starts and freezes the animations. Powering on uses the selected generator. Polarity changes apply to the driven motor only, after its delayed start.
 
 For `transformer`, `frequency` controls the alternating flux animation. No GLB animation is required. The artistic view shows circulating flux around the core, while the engineering view shows direction arrows and primary and secondary winding activity.
 

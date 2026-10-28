@@ -8,6 +8,7 @@ export default class MagneticFieldContext {
         this.angle = THREE.MathUtils.degToRad(config.phaseOffsetDegrees);
         this.angularVelocity = 0;
         this.angularDelta = 0;
+        this.rotationEnabled = true;
         this.modelQuaternion = new THREE.Quaternion();
         this.sourceQuaternion = new THREE.Quaternion();
         this.relativeQuaternion = new THREE.Quaternion();
@@ -36,6 +37,13 @@ export default class MagneticFieldContext {
             this.rotationDelta[this.config.rotationAxis],
             this.rotationDelta.w
         );
+
+        if (!this.rotationEnabled) {
+            this.previousAngle = rawAngle;
+            this.angularDelta = 0;
+            this.angularVelocity = 0;
+            return;
+        }
 
         if (this.previousAngle === undefined) {
             this.previousAngle = rawAngle;
